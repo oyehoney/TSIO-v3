@@ -72,24 +72,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| F0 | — | Pending |
-| F1 | — | Pending |
-| F2 | — | Pending |
-| F3 | — | Pending |
-| F4 | — | Pending |
-| F5 | — | Pending |
-| F7 | — | Pending |
-| F8 | — | Pending |
-| F9 | — | Pending |
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| PLAT-03 | — | Pending |
-| PLAT-04 | — | Pending |
+| PLAT-01 | Phase 1 — Foundation & Platform | Pending |
+| PLAT-02 | Phase 1 — Foundation & Platform | Pending |
+| PLAT-03 | Phase 1 — Foundation & Platform | Pending |
+| F8 | Phase 2 — Content Model & Admin Interface | Pending |
+| F9 | Phase 2 — Content Model & Admin Interface | Pending |
+| F2 | Phase 3 — Innovation Record & Perspectives | Pending |
+| F3 | Phase 3 — Innovation Record & Perspectives | Pending |
+| F4 | Phase 3 — Innovation Record & Perspectives | Pending |
+| F0 | Phase 4 — Catalog & Search | Pending |
+| F1 | Phase 4 — Catalog & Search | Pending |
+| F5 | Phase 5 — Engagement & Opportunity Submission | Pending |
+| F7 | Phase 5 — Engagement & Opportunity Submission | Pending |
+| PLAT-04 | Phase 6 — Content Seeding & Launch Polish | Pending |
 
 **Coverage:**
 - v1 requirements: 13 total
-- Mapped to phases: 0 (roadmap not yet created)
-- Unmapped: 13 ⚠️
+- Mapped to phases: 13 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-07-29*
