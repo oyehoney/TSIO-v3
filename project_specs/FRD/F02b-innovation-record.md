@@ -32,7 +32,7 @@ All fields below are part of the canonical Innovation Record. Fields marked `(pu
 | `technology_area_tags` | array of strings (0–10 items) | optional | Technology area classification tags |
 | `artifact_links` | array of objects (min 1) | pub-required | Each item: `{ label: string, url: string (valid URL), type: enum }` |
 | `artifact_link.type` | enum | pub-required per item | `DOCUMENT`, `CODE_REPOSITORY`, `VIDEO`, `DIAGRAM`, `OTHER` |
-| `engagement_options` | array of enums (1–4 items) | pub-required | Options from: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM` |
+| `engagement_options` | array of enums (1–4 items) | pub-required | Options from: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`. Note: `SUBMIT_RELATED_PROBLEM` is not an engagement option — stakeholders submit related problems via the F05 Opportunity Submission form. |
 | `trust_disclaimers` | system-applied | system | Automatically derived from `maturity_level` and `source_type`; curator cannot suppress |
 | `last_reviewed_date` | date (YYYY-MM-DD) | pub-required | Date curator last verified record accuracy |
 | `executive_perspective_text` | text (50–3000 chars) | pub-required | Curator-authored executive framing text |

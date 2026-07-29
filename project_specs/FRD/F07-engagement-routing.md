@@ -16,7 +16,7 @@ Every engagement action a stakeholder takes on the Hub — demo request, adoptio
 ### Terminology
 
 - **Engagement Request:** A trackable record capturing a stakeholder's request to take a next action related to a specific Innovation Record. Includes request type, record reference, requestor identity, office, description of interest, and desired next step.
-- **Engagement Option:** One of the configured next-action types available on a specific Innovation Record: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM`.
+- **Engagement Option:** One of the configured next-action types available on a specific Innovation Record: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`. (Note: submitting a related problem is handled via the F05 Opportunity Submission form — not a distinct engagement option.)
 - **Next-Action Panel:** The UI section on every Innovation Record page that displays the configured engagement options as actionable buttons or links.
 - **Configurable Routing Email:** The email address that receives all engagement request notifications. Initial value: `AOml_TSO_IRB_Team@ao.uscourts.gov`. Changeable by a curator without code deployment.
 - **Engagement Confirmation:** The on-screen acknowledgment shown to the requestor after submitting an engagement request.
@@ -77,7 +77,7 @@ Every engagement action a stakeholder takes on the Hub — demo request, adoptio
 
 | Field | Type | Req? | Description |
 |-------|------|------|-------------|
-| `request_type` | enum | required (system-set) | `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM` |
+| `request_type` | enum | required (system-set) | `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING` |
 | `record_id` | UUID | required (system-set) | The Innovation Record this request is about |
 | `requestor_name` | string (2–200 chars) | required | Requestor's full name |
 | `requestor_email` | string, email format | required | Requestor's email address |

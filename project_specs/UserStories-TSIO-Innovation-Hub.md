@@ -182,7 +182,7 @@ Acceptance criteria are listed beneath each story. Stories are grouped by epic a
 - [ ] If `superseded_by_record_id` references a non-existent record, the system returns an error: "The superseding record ID does not exist."
 - [ ] Curator can mark any record as `ARCHIVED`; archived records are removed from the default catalog browse but remain accessible via direct URL with an "Archived" label
 - [ ] Archiving is logged to the audit history
-- [ ] Only Draft-state records may be permanently deleted; Published, Superseded, and Archived records cannot be deleted (retained for institutional record integrity)
+- [ ] Only Draft-state records may be permanently deleted via `DELETE /api/v1/records/{record_id}`; attempting to delete a non-Draft record returns 409 with message "Only Draft-state records may be deleted. To remove from public view, Archive this record instead." Published, Superseded, and Archived records are retained for institutional record integrity.
 
 **Priority:** P0 | **Feature Ref:** F2, F8
 
@@ -441,7 +441,7 @@ Acceptance criteria are listed beneath each story. Stories are grouped by epic a
 - [ ] The Records section displays all records (all publication states) in a sortable table with columns: Title, Maturity, Review Status, Publication State, Owner, Last Updated
 - [ ] Curator can filter and search the record list by title, publication state, maturity, and review status
 - [ ] Selecting a record opens an admin detail view with all fields editable (subject to state-based edit rules)
-- [ ] All state transitions follow the valid lifecycle: DRAFT → REVIEW, REVIEW → PUBLISHED (governance gate), REVIEW → DRAFT, PUBLISHED → REVIEW (requires confirmation), PUBLISHED → SUPERSEDED (requires linked ID), PUBLISHED → ARCHIVED, SUPERSEDED → ARCHIVED
+- [ ] All state transitions follow the valid lifecycle: DRAFT → REVIEW, REVIEW → PUBLISHED (governance gate), REVIEW → DRAFT (silent revert, no confirmation required since record was never public — audit entry logged), PUBLISHED → REVIEW (requires confirmation), PUBLISHED → SUPERSEDED (requires linked ID), PUBLISHED → ARCHIVED, SUPERSEDED → ARCHIVED
 - [ ] Attempting an invalid state transition returns: "This state transition is not permitted. Current state: [state]. Allowed transitions: [list]."
 - [ ] Publication governance gate prevents any record missing pub-required fields from being published; the system lists all blocking fields
 
@@ -505,7 +505,7 @@ Acceptance criteria are listed beneath each story. Stories are grouped by epic a
 - [ ] Review status is a required field for publication; curator selects from a dropdown displaying all 7 options with their definitions shown inline
 - [ ] `VALIDATED_FOR_REUSE` review status triggers the Reuse Badge display on the catalog card and record page
 - [ ] Maturity level changes are logged to the audit history; the system does not auto-advance or auto-restrict maturity
-- [ ] `ARCHIVED` maturity level is distinct from `ARCHIVED` publication state; a record may have `maturity_level = ARCHIVED` while `publication_state = PUBLISHED` (curator should also archive the publication state to remove from default catalog browse)
+- [ ] `ARCHIVED` maturity level is distinct from `ARCHIVED` publication state: `maturity_level = ARCHIVED` signals the innovation work is no longer active; `publication_state = ARCHIVED` removes the record from the default catalog browse. Curators should set both when retiring work. When `maturity_level = ARCHIVED` is set on a Published record, the admin interface displays an advisory prompting the curator to also archive the publication state — but does not cascade automatically.
 - [ ] Attempting to publish without maturity level set returns: "Maturity level is required before publishing."
 - [ ] Attempting to publish without review status set returns: "Review status is required before publishing."
 

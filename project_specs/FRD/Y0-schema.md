@@ -145,8 +145,7 @@ CREATE TABLE record_engagement_options (
     record_id       UUID        NOT NULL REFERENCES innovation_records(record_id) ON DELETE CASCADE,
     option_type     VARCHAR(40) NOT NULL CHECK (option_type IN (
                         'REQUEST_DEMO', 'REQUEST_ADOPTION_DISCUSSION',
-                        'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING',
-                        'SUBMIT_RELATED_PROBLEM'
+                        'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING'
                     )),
     display_order   INTEGER     NOT NULL DEFAULT 0,
     UNIQUE (record_id, option_type)
@@ -282,8 +281,7 @@ CREATE TABLE engagement_requests (
     record_id               UUID        NOT NULL REFERENCES innovation_records(record_id),
     request_type            VARCHAR(40) NOT NULL CHECK (request_type IN (
                                 'REQUEST_DEMO', 'REQUEST_ADOPTION_DISCUSSION',
-                                'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING',
-                                'SUBMIT_RELATED_PROBLEM'
+                                'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING'
                             )),
     requestor_name          VARCHAR(200) NOT NULL,
     requestor_email         VARCHAR(255) NOT NULL,

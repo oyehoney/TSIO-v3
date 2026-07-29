@@ -174,6 +174,8 @@ This model is foundational to the Hub's trust integrity. It is surfaced visibly 
 
 **Key governance rule:** Maturity level is assigned by an I&R Curator, not self-reported by contributors. It may not be advanced without curator action in the publication lifecycle.
 
+**Archived maturity vs. Archived publication state:** These are independent controls. `maturity_level = Archived` signals the *innovation work* is no longer active. `publication_state = Archived` signals the *Hub record* is removed from the default catalog browse. When retiring work, curators should set both. The system will prompt the curator to archive the publication state when Archived maturity is selected on a Published record, but will not cascade automatically.
+
 ### 6.2 Review Status
 
 Review status is tracked independently from maturity. A technically sophisticated POC may lack policy or security review.
@@ -352,7 +354,7 @@ Draft → Review → Published → Superseded / Archived
 **Capabilities:**
 - Trackable engagement record per request, capturing: request type, innovation record reference, requestor name and office, description of interest, desired next step
 - Configurable routing email address (initial: `AOml_TSO_IRB_Team@ao.uscourts.gov`); address must be changeable without a code deployment
-- Engagement request options exposed on every Innovation Record (F2): request demo, request adoption discussion, request technical guidance, request briefing
+- Engagement request options exposed on every Innovation Record (F2): request demo, request adoption discussion, request technical guidance, request briefing. (Submitting a related problem is handled via the F5 Opportunity Submission form — see empty-state search CTA and record-page links.)
 - Engagement confirmation message sent to requestor
 - Engagement activity visible to curators in admin interface (F8)
 - Future-state: routing by record, mission area, or request type (deferred post-MVP)

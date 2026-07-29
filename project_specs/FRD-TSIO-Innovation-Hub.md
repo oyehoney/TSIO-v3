@@ -450,6 +450,15 @@ The Innovation Record is also the data entity from which Executive and Technical
 5. Curator makes edits and re-publishes using the same process as steps 9–13 above.
 6. Alternatively, if the change is a supersession: curator clicks "Supersede" → system marks the record as `SUPERSEDED`, prompts for the `superseded_by_record_id`, and transitions the new record to Published.
 
+#### Returning a Record to Draft from Review (CURATOR)
+
+1. Curator opens a record in `REVIEW` state in the admin interface.
+2. Curator clicks "Return to Draft."
+3. System transitions record to `DRAFT` state without requiring confirmation (the record was never public).
+4. System logs an audit entry (state change: `REVIEW → DRAFT`, actor, timestamp).
+5. No fields are changed; the record retains all content authored to date.
+6. Curator may edit any field and re-submit for review using the standard process (steps 9–13 of Creating a Record).
+
 #### Archiving a Record (CURATOR)
 
 1. Curator selects "Archive" on any record.
@@ -493,7 +502,7 @@ All fields below are part of the canonical Innovation Record. Fields marked `(pu
 | `technology_area_tags` | array of strings (0–10 items) | optional | Technology area classification tags |
 | `artifact_links` | array of objects (min 1) | pub-required | Each item: `{ label: string, url: string (valid URL), type: enum }` |
 | `artifact_link.type` | enum | pub-required per item | `DOCUMENT`, `CODE_REPOSITORY`, `VIDEO`, `DIAGRAM`, `OTHER` |
-| `engagement_options` | array of enums (1–4 items) | pub-required | Options from: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM` |
+| `engagement_options` | array of enums (1–4 items) | pub-required | Options from: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`. Note: `SUBMIT_RELATED_PROBLEM` is not an engagement option — stakeholders submit related problems via the F05 Opportunity Submission form, which is already linked from the empty-state search and record pages. |
 | `trust_disclaimers` | system-applied | system | Automatically derived from `maturity_level` and `source_type`; curator cannot suppress |
 | `last_reviewed_date` | date (YYYY-MM-DD) | pub-required | Date curator last verified record accuracy |
 | `executive_perspective_text` | text (50–3000 chars) | pub-required | Curator-authored executive framing text |
@@ -583,6 +592,7 @@ See `Y1-api.md` §Records for full request/response schemas.
 | `POST` | `/api/v1/records/{record_id}/supersede` | CURATOR | Mark record as SUPERSEDED |
 | `POST` | `/api/v1/records/{record_id}/archive` | CURATOR | Mark record as ARCHIVED |
 | `GET` | `/api/v1/records/{record_id}/audit` | CURATOR | Retrieve audit history for a record |
+| `DELETE` | `/api/v1/records/{record_id}` | CURATOR | Permanently delete a record. Permitted only when `publication_state = DRAFT`. Returns 409 with `DELETE_NOT_PERMITTED` if record is in any other state. |
 
 ---
 
@@ -837,6 +847,7 @@ Same as F02b §Inputs. The following fields are specifically relevant to the les
 - The Hub must not attempt to crawl, index, or cache the content of the linked source document. Only the URL and label are stored.
 - `key_findings` must be manually authored; no automated extraction from linked documents is performed or implied.
 - If the source document URL becomes unreachable, the Innovation Record remains valid and published. The broken link is a content issue to be resolved by the curator during the next review cycle, not a system error that unpublishes the record.
+- **Link reachability check:** The system performs a non-blocking HTTP HEAD check on each artifact URL when the curator saves the record (Draft or any state) and again on the REVIEW → PUBLISHED transition. If the URL returns a non-200 response, the system renders an inline advisory on the affected artifact link field: "This URL may not be accessible. Verify the link before publishing." This advisory is also written as a warning entry in the audit log. The check does not block saving or publishing — it is informational only.
 
 ---
 
@@ -846,7 +857,7 @@ Same as F02b §Inputs. The following fields are specifically relevant to the les
 |----------|-------------|------------|------------------------|
 | Artifact URL is not a valid HTTPS URL | 422 | `INVALID_ARTIFACT_URL` | "Artifact URL must be a valid https:// address." |
 | Curator attempts to publish with no artifact links | 422 | `PUBLICATION_GATE_FAILED` | "At least one artifact link is required before publishing." |
-| Artifact URL is reachable but returns non-200 (link check, if implemented) | 200 (warning only) | — | Curator sees advisory: "This URL may not be accessible. Verify the link before publishing." |
+| Artifact URL returns non-200 on save or publish (link check runs on every save and on publish transition) | 200 (warning only, non-blocking) | — | Curator sees inline advisory on the artifact link field: "This URL may not be accessible. Verify the link before publishing." Advisory is also written as a warning entry in the audit log. Record is not blocked from saving or publishing. |
 | Source document access requires authentication the stakeholder doesn't have | 200 (record valid) | — | No system error; curator should note access requirements in `reuse_guidance` or `technical_perspective_text` |
 
 ---
@@ -1163,7 +1174,7 @@ Every engagement action a stakeholder takes on the Hub — demo request, adoptio
 ### Terminology
 
 - **Engagement Request:** A trackable record capturing a stakeholder's request to take a next action related to a specific Innovation Record. Includes request type, record reference, requestor identity, office, description of interest, and desired next step.
-- **Engagement Option:** One of the configured next-action types available on a specific Innovation Record: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM`.
+- **Engagement Option:** One of the configured next-action types available on a specific Innovation Record: `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`. (Note: submitting a related problem is handled via the F05 Opportunity Submission form — not a distinct engagement option.)
 - **Next-Action Panel:** The UI section on every Innovation Record page that displays the configured engagement options as actionable buttons or links.
 - **Configurable Routing Email:** The email address that receives all engagement request notifications. Initial value: `AOml_TSO_IRB_Team@ao.uscourts.gov`. Changeable by a curator without code deployment.
 - **Engagement Confirmation:** The on-screen acknowledgment shown to the requestor after submitting an engagement request.
@@ -1224,7 +1235,7 @@ Every engagement action a stakeholder takes on the Hub — demo request, adoptio
 
 | Field | Type | Req? | Description |
 |-------|------|------|-------------|
-| `request_type` | enum | required (system-set) | `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING`, `SUBMIT_RELATED_PROBLEM` |
+| `request_type` | enum | required (system-set) | `REQUEST_DEMO`, `REQUEST_ADOPTION_DISCUSSION`, `REQUEST_TECHNICAL_GUIDANCE`, `REQUEST_BRIEFING` |
 | `record_id` | UUID | required (system-set) | The Innovation Record this request is about |
 | `requestor_name` | string (2–200 chars) | required | Requestor's full name |
 | `requestor_email` | string, email format | required | Requestor's email address |
@@ -1332,7 +1343,7 @@ Access to the admin interface is controlled by role-based authentication. The sp
 
 ### Sub-Features
 
-- **Record Management:** Create, edit, and delete Innovation Records; manage all structured fields (see F02)
+- **Record Management:** Create, edit, and (Draft-state only) permanently delete Innovation Records; manage all structured fields (see F02). Published, Superseded, and Archived records cannot be deleted — use Archive to remove from catalog browse.
 - **Maturity & Review Status Assignment:** Assign and update maturity level and review status; changes logged to audit history
 - **Publication Lifecycle Control:** Manage record state transitions (Draft → Review → Published → Superseded → Archived); governance gate enforced before publish
 - **Owner & Attribution Management:** Assign named owner/steward, contributing office, contributor attribution
@@ -1623,7 +1634,11 @@ Maturity is curator-assigned. Curators may not advance maturity without a delibe
 - Maturity level must be assigned before a record can be published.
 - Curators may set any maturity level; the system does not auto-advance or auto-restrict maturity based on other fields.
 - Maturity level changes are logged to the audit history.
-- `ARCHIVED` maturity is distinct from `ARCHIVED` publication state. A record may have `maturity_level = ARCHIVED` while still `publication_state = PUBLISHED` (it will display as archived-content but still publicly visible). Curators should also set `publication_state = ARCHIVED` to remove from default catalog browse.
+- `ARCHIVED` maturity is distinct from `ARCHIVED` publication state. These are independent controls with different meanings:
+  - **`maturity_level = ARCHIVED`** signals that the *innovation work itself* is no longer active — the effort was stopped, superseded, or retired. It describes the state of the underlying work.
+  - **`publication_state = ARCHIVED`** signals that the *Hub record* has been removed from the default catalog browse. The record is still accessible via direct URL with an "Archived" label.
+  - **Curator guidance:** When retiring a completed-or-stopped innovation effort, curators should set both `maturity_level = ARCHIVED` and `publication_state = ARCHIVED`. Setting maturity alone leaves the record visible in the default catalog browse. Setting publication state alone removes catalog visibility but does not signal the work's retirement status on the record itself.
+  - The system does not automatically cascade one to the other. When a curator sets `maturity_level = ARCHIVED` on a Published record, the admin interface displays an advisory: "This record's work is marked as Archived. Consider also archiving the publication state to remove it from the default catalog browse."
 
 ---
 
@@ -1893,8 +1908,7 @@ CREATE TABLE record_engagement_options (
     record_id       UUID        NOT NULL REFERENCES innovation_records(record_id) ON DELETE CASCADE,
     option_type     VARCHAR(40) NOT NULL CHECK (option_type IN (
                         'REQUEST_DEMO', 'REQUEST_ADOPTION_DISCUSSION',
-                        'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING',
-                        'SUBMIT_RELATED_PROBLEM'
+                        'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING'
                     )),
     display_order   INTEGER     NOT NULL DEFAULT 0,
     UNIQUE (record_id, option_type)
@@ -2030,8 +2044,7 @@ CREATE TABLE engagement_requests (
     record_id               UUID        NOT NULL REFERENCES innovation_records(record_id),
     request_type            VARCHAR(40) NOT NULL CHECK (request_type IN (
                                 'REQUEST_DEMO', 'REQUEST_ADOPTION_DISCUSSION',
-                                'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING',
-                                'SUBMIT_RELATED_PROBLEM'
+                                'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING'
                             )),
     requestor_name          VARCHAR(200) NOT NULL,
     requestor_email         VARCHAR(255) NOT NULL,
