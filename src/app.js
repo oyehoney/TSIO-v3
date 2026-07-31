@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const { Pool } = require('pg');
+const { getDb } = require('./db');
 
 let pool;
 
@@ -15,6 +16,12 @@ function createApp() {
   const app = express();
   app.use(express.json());
 
+  // Inject Knex db instance onto req for record routes
+  app.use((req, _res, next) => {
+    req.db = getDb();
+    next();
+  });
+
   // Health check — returns 200 with DB ping
   app.get('/healthz', async (req, res) => {
     try {
@@ -28,6 +35,10 @@ function createApp() {
   // API v1 routes
   const catalogRouter = require('./routes/catalog');
   app.use('/api/v1/catalog', catalogRouter(getPool));
+
+  // Record routes (Wave 2c — Plan 05)
+  const recordRouter = require('./handlers/recordHandler');
+  app.use('/api/v1', recordRouter);
 
   // 404 handler
   app.use((req, res) => {

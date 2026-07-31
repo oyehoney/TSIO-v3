@@ -1,10 +1,12 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: 'ts-jest',
   testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.ts'],
+  testMatch: ['**/tests/**/*.test.ts', '**/tests/**/*.test.js'],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
+      // isolatedModules: true uses ts-jest's transpile-only mode (faster, no type checking)
+      // Type checking is done separately via tsc --noEmit (see package.json build script)
+      isolatedModules: true,
       tsconfig: {
         target: 'ES2020',
         module: 'commonjs',
@@ -13,7 +15,7 @@ module.exports = {
         allowSyntheticDefaultImports: true,
         resolveJsonModule: true,
         skipLibCheck: true,
-        moduleResolution: 'node',
+        moduleResolution: 'bundler',
       },
     }],
   },
