@@ -33,14 +33,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. The application starts, serves the public catalog route (even if empty), and connects to a running PostgreSQL database
   6. All traffic is HTTPS-only (HTTP redirects to HTTPS); TLS 1.2+ enforced; FIPS 140-2/3 validated cipher suites used (no RC4, DES, MD5, SHA-1 for signing); no plaintext secrets in logs or environment files committed to source control
   7. The application is deployable to a FedRAMP-authorized hosting environment (Docker-compose for local dev; deployment config targets Azure Government / AWS GovCloud or Judiciary-approved equivalent)
-**Plans**: TBD
+**Plans**: 5 plans in 5 sequential waves
 
 Plans:
-- [ ] 01-01: Project scaffolding — monolithic Node.js/Express app, PostgreSQL, docker-compose dev stack, HTTPS + FIPS cipher config, environment configuration
-- [ ] 01-02: Database schema — all tables, indexes, FTS triggers, enum constraints per TechArch DDL; storage-layer encryption documented
-- [ ] 01-03: Authentication — OIDC/Azure AD integration, AuthMiddleware, session management (FIPS-safe tokens), role enforcement
-- [ ] 01-04: Audit infrastructure — AuditService, append-only audit_log table, write-on-every-change integration
-- [ ] 01-05: Hub settings — hub_settings table, SettingsService, admin settings page, configurable routing email
+- [ ] 01-01-PLAN.md — Project scaffolding: Node.js/Express app skeleton, docker-compose dev stack (postgres:14), HTTPS redirect middleware, FIPS TLS cipher config, Zod env validation [Wave 1]
+- [ ] 01-02-PLAN.md — Database schema: all 4 tables per exact TechArch DDL (users, audit_log, hub_settings, innovation_records), migrations, FTS trigger, hub_settings seed, context boot test [Wave 2]
+- [ ] 01-03-PLAN.md — Authentication: Passport.js OIDC/Azure AD strategy, user upsert, requireAuth/requireRole middleware, auth routes (/login /callback /logout /me), integration tests [Wave 3]
+- [ ] 01-04-PLAN.md — Audit infrastructure: AuditService (log/getLog/getGlobalLog), auditContext middleware, append-only invariant, integration tests [Wave 4]
+- [ ] 01-05-PLAN.md — Hub settings + accessibility: SettingsService, settings API + audit-log API per TechArch, admin settings EJS page, Playwright E2E with axe-core (COMP-03 baseline) [Wave 5]
 
 ### Phase 2: Content Model & Admin Interface
 **Goal**: Authorized curators can create, edit, and manage innovation records through an admin interface with the full maturity model and review status model enforced; the publication lifecycle state machine gates record visibility.
