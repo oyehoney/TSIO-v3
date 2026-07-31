@@ -2,12 +2,13 @@
   "name": "tsio-innovation-hub",
   "version": "1.0.0",
   "description": "TSIO Innovation Hub — backend API",
-  "main": "src/app.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "jest --testEnvironment=node --forceExit",
-    "test:integration": "jest tests/integration --testEnvironment=node --forceExit"
+    "build": "tsc --noEmit",
+    "start": "ts-node src/server.ts",
+    "dev": "ts-node src/server.ts",
+    "test": "jest --forceExit",
+    "test:integration": "jest tests/integration --forceExit"
   },
   "dependencies": {
     "express": "^5.2.1",
@@ -28,10 +29,5 @@
     "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2"
-  },
-  "jest": {
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ]
   }
 }
