@@ -35,6 +35,14 @@ Requirements for initial release (R1 + R2 per Story Map). Each maps to roadmap p
 - [ ] **PLAT-03**: Engagement routing email address is configurable by an admin without code deployment
 - [ ] **PLAT-04**: MVP content set includes at least 3 curated POC records seeded at launch, including the Audio Security POC as the anchor record
 
+### Compliance & Security
+
+- [ ] **COMP-01**: The system architecture supports FISMA Moderate or Low categorization — architecture decisions (hosting environment, data flows, encryption in transit/at rest) must not preclude an Authority to Operate (ATO) assessment; hosting must use a FedRAMP-authorized cloud environment (Azure Government, AWS GovCloud, or equivalent Judiciary-approved infrastructure)
+- [ ] **COMP-02**: All cryptographic operations (TLS, session tokens, password hashing if applicable) use FIPS 140-2/3 validated modules — no use of non-FIPS cipher suites or custom cryptographic implementations; this is an architectural constraint applied from the first code commit
+- [ ] **COMP-03**: Section 508 / WCAG 2.1 AA accessibility compliance is enforced as a build-time constraint across all user-facing pages — not a post-hoc audit; every new UI component includes automated accessibility checks (axe-core or equivalent) and keyboard navigation verification
+- [ ] **COMP-04**: All data in transit is encrypted (HTTPS/TLS 1.2+ enforced, no HTTP fallback); all data at rest in PostgreSQL is encrypted at the storage layer (database server encryption, not application-level); no PII or sensitive Judiciary information is logged in plaintext application logs
+- [ ] **COMP-05**: The system's security posture is documented sufficient to support an ATO package: data classification of all stored fields, system boundary diagram, authentication/authorization controls description, audit log coverage, and open risk items — this documentation is a deliverable of Phase 6
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -85,10 +93,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | F5 | Phase 5 — Engagement & Opportunity Submission | Pending |
 | F7 | Phase 5 — Engagement & Opportunity Submission | Pending |
 | PLAT-04 | Phase 6 — Content Seeding & Launch Polish | Pending |
+| COMP-01 | Phase 1 — Foundation & Platform | Pending |
+| COMP-02 | Phase 1 — Foundation & Platform | Pending |
+| COMP-03 | Phase 1 — Foundation & Platform (constraint applied from start) | Pending |
+| COMP-04 | Phase 1 — Foundation & Platform | Pending |
+| COMP-05 | Phase 6 — Content Seeding & Launch Polish | Pending |
 
 **Coverage:**
-- v1 requirements: 13 total
-- Mapped to phases: 13 ✓
+- v1 requirements: 18 total
+- Mapped to phases: 18 ✓
 - Unmapped: 0 ✓
 
 ---

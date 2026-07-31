@@ -12,31 +12,33 @@ The TSIO Innovation Hub goes from nothing to a governed, publicly accessible pla
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Platform** - Project scaffolding, database schema, authentication, role model, audit infrastructure, and configurable settings
+- [ ] **Phase 1: Foundation & Platform** - Project scaffolding, database schema, authentication, role model, audit infrastructure, configurable settings, and federal compliance architecture (FIPS crypto, HTTPS-only, ATO-eligible hosting)
 - [ ] **Phase 2: Content Model & Admin Interface** - Maturity/trust model enforcement, curation/admin interface, publication lifecycle state machine
 - [ ] **Phase 3: Innovation Record & Perspectives** - Full innovation record structure, executive/technical perspective toggle, lessons-learned integration workflow
 - [ ] **Phase 4: Catalog & Search** - Public-facing browsable catalog with filters, full-text search with problem-oriented relevance ranking
 - [ ] **Phase 5: Engagement & Opportunity Submission** - Engagement routing (demo/adoption/technical guidance requests), opportunity submission form
-- [ ] **Phase 6: Content Seeding & Launch Polish** - Seed 3+ curated POC records including Audio Security POC anchor, trust disclaimer UI, WCAG 2.1 AA, launch readiness
+- [ ] **Phase 6: Content Seeding & Launch Polish** - Seed 3+ curated POC records including Audio Security POC anchor, trust disclaimer UI, WCAG 2.1 AA, ATO documentation package, launch readiness
 
 ## Phase Details
 
 ### Phase 1: Foundation & Platform
-**Goal**: The application runs, users can authenticate with their organizational identity, roles are enforced, every record change is captured in an audit log, and the engagement routing email address is configurable without a code deployment.
+**Goal**: The application runs, users can authenticate with their organizational identity, roles are enforced, every record change is captured in an audit log, the engagement routing email address is configurable without a code deployment, and the architecture satisfies federal security constraints (FIPS-validated crypto, HTTPS-only, encrypted at rest, ATO-eligible hosting) from day one.
 **Depends on**: Nothing (first phase)
-**Requirements**: PLAT-01, PLAT-02, PLAT-03
+**Requirements**: PLAT-01, PLAT-02, PLAT-03, COMP-01, COMP-02, COMP-03, COMP-04
 **Success Criteria** (what must be TRUE):
   1. A curator can log in via Azure AD / OIDC and access the admin interface; an anonymous user cannot
   2. Role-based access is enforced: PUBLIC can browse, CURATOR can create/edit records, ADMIN can manage settings and users
   3. Every material change to a record (field edit, state transition) is captured in the audit log with user, timestamp, and before/after values
   4. An admin can change the engagement routing email address in the settings UI without touching code or redeploying
   5. The application starts, serves the public catalog route (even if empty), and connects to a running PostgreSQL database
+  6. All traffic is HTTPS-only (HTTP redirects to HTTPS); TLS 1.2+ enforced; FIPS 140-2/3 validated cipher suites used (no RC4, DES, MD5, SHA-1 for signing); no plaintext secrets in logs or environment files committed to source control
+  7. The application is deployable to a FedRAMP-authorized hosting environment (Docker-compose for local dev; deployment config targets Azure Government / AWS GovCloud or Judiciary-approved equivalent)
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: Project scaffolding — monolithic web app, PostgreSQL, environment configuration, CI baseline
-- [ ] 01-02: Database schema — all tables, indexes, FTS triggers, enum constraints per TechArch DDL
-- [ ] 01-03: Authentication — OIDC/Azure AD integration, AuthMiddleware, session management, role enforcement
+- [ ] 01-01: Project scaffolding — monolithic Node.js/Express app, PostgreSQL, docker-compose dev stack, HTTPS + FIPS cipher config, environment configuration
+- [ ] 01-02: Database schema — all tables, indexes, FTS triggers, enum constraints per TechArch DDL; storage-layer encryption documented
+- [ ] 01-03: Authentication — OIDC/Azure AD integration, AuthMiddleware, session management (FIPS-safe tokens), role enforcement
 - [ ] 01-04: Audit infrastructure — AuditService, append-only audit_log table, write-on-every-change integration
 - [ ] 01-05: Hub settings — hub_settings table, SettingsService, admin settings page, configurable routing email
 
@@ -111,15 +113,16 @@ Plans:
 - [ ] 05-03: SubmissionService — opportunity submission form, CAPTCHA, rate limiting, curator queue; OpportunitySubmissionsPage in admin
 
 ### Phase 6: Content Seeding & Launch Polish
-**Goal**: The Hub launches with at least 3 fully curated innovation records — including the Audio Security POC as the anchor record and at least one archived experiment — trust disclaimer UI is visually prominent, accessibility meets WCAG 2.1 AA, and the system is ready for stakeholder access.
+**Goal**: The Hub launches with at least 3 fully curated innovation records — including the Audio Security POC as the anchor record and at least one archived experiment — trust disclaimer UI is visually prominent, accessibility meets WCAG 2.1 AA, performance targets are met, and ATO-support documentation is complete.
 **Depends on**: Phase 5
-**Requirements**: PLAT-04
+**Requirements**: PLAT-04, COMP-05
 **Success Criteria** (what must be TRUE):
   1. At least 3 published innovation records are live at launch, with the Audio Security POC (GPU/CPU separation, Azure Government Cloud constraints, performance limitations, production-readiness gaps) as the first fully structured record
   2. At least 1 archived or stopped experiment record is published, demonstrating honest lifecycle representation (maturity_level = ARCHIVED or publication_state = ARCHIVED)
   3. Trust disclaimer blocks are visually prominent on every published record — a stakeholder cannot miss them; the interface never implies a POC is production-ready
   4. The Hub meets WCAG 2.1 AA accessibility standards (keyboard navigation, screen reader compatibility, sufficient color contrast on maturity/review status badges)
   5. The public catalog loads within 3 seconds under normal load; a curator can create and publish a record from scratch in under 60 minutes
+  6. ATO-support documentation package is complete: data classification of all stored fields, system boundary diagram, authentication/authorization controls description, audit log coverage table, and identified open risk items
 **Plans**: TBD
 
 Plans:
@@ -127,7 +130,7 @@ Plans:
 - [ ] 06-02: Additional seed records (2+ POCs, 1 archived experiment) — curate and publish
 - [ ] 06-03: Trust disclaimer UI polish — visual prominence audit, color contrast, badge accessibility
 - [ ] 06-04: WCAG 2.1 AA audit and remediation — keyboard navigation, ARIA labels, screen reader testing
-- [ ] 06-05: Performance baseline — catalog/search load time, database query optimization, launch readiness checklist
+- [ ] 06-05: ATO documentation package + performance baseline — system boundary diagram, data classification table, controls summary, launch readiness checklist
 
 ## Progress
 
