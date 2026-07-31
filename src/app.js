@@ -12,15 +12,32 @@ function getPool() {
   return pool;
 }
 
-function createApp() {
+/**
+ * Create Express app.
+ * @param {{ sessionMiddleware?: function, db?: object }} [options]
+ *   - sessionMiddleware: optional custom session middleware for testing
+ *   - db: optional pre-configured Knex instance (for testing)
+ */
+function createApp(options = {}) {
   const app = express();
   app.use(express.json());
 
   // Inject Knex db instance onto req for record routes
   app.use((req, _res, next) => {
-    req.db = getDb();
+    req.db = options.db || getDb();
     next();
   });
+
+  // Session middleware — use provided test middleware or default no-op
+  if (options.sessionMiddleware) {
+    app.use(options.sessionMiddleware);
+  } else {
+    // Default: no session (unauthenticated)
+    app.use((req, _res, next) => {
+      if (!req.session) req.session = {};
+      next();
+    });
+  }
 
   // Health check — returns 200 with DB ping
   app.get('/healthz', async (req, res) => {
