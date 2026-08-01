@@ -105,12 +105,12 @@ Plans:
   3. Every submitted engagement request and opportunity submission triggers an email to the configurable routing address (AOml_TSO_IRB_Team@ao.uscourts.gov or whatever is set in admin settings)
   4. Curators can view all incoming opportunity submissions and engagement requests in the admin interface, with status and the ability to add internal notes
   5. IP-based rate limiting prevents submission abuse; CAPTCHA is applied to public submission forms
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01: EngagementService — request creation, validation, rate limiting, email trigger; EngagementActivityPage in admin
-- [ ] 05-02: EngagementRequestModal — per-record engagement form, request type routing, confirmation messaging
-- [ ] 05-03: SubmissionService — opportunity submission form, CAPTCHA, rate limiting, curator queue; OpportunitySubmissionsPage in admin
+- [ ] 05-01-PLAN.md — EngagementService (TDD): engagement request creation, validation (record published + record_engagement_options check), reCAPTCHA v3, rate limiting (10/IP/hr), Nodemailer soft-fail email, three API endpoints, curator admin page [Wave 1]
+- [ ] 05-02-PLAN.md — EngagementRequestModal: NextActionPanel stub wired, per-record engagement form modal, request type pre-population, reCAPTCHA v3 client-side, confirmation text, Playwright + axe-core [Wave 2, depends on 05-01]
+- [ ] 05-03-PLAN.md — SubmissionService (TDD): opportunity submission form at /submit-opportunity, reCAPTCHA v3, rate limiting (5/IP/hr), HTML stripping, Nodemailer soft-fail, exact FRD confirmation text, three API endpoints, curator admin page, Playwright + axe-core [Wave 1]
 
 ### Phase 6: Content Seeding & Launch Polish
 **Goal**: The Hub launches with at least 3 fully curated innovation records — including the Audio Security POC as the anchor record and at least one archived experiment — trust disclaimer UI is visually prominent, accessibility meets WCAG 2.1 AA, performance targets are met, and ATO-support documentation is complete.
@@ -143,5 +143,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Content Model & Admin Interface | 0/3 | Planned (3 plans, 2 waves) | - |
 | 3. Innovation Record & Perspectives | 0/4 | Planned (4 plans, 3 waves) | - |
 | 4. Catalog & Search | 0/4 | Planned (4 plans, 2 waves) | - |
-| 5. Engagement & Opportunity Submission | 0/3 | Not started | - |
+| 5. Engagement & Opportunity Submission | 0/3 | Planned (3 plans, 2 waves) | - |
 | 6. Content Seeding & Launch Polish | 0/5 | Not started | - |
