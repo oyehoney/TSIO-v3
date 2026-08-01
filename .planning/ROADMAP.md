@@ -87,13 +87,13 @@ Plans:
   3. A user can search using a problem description (not just a project name) and receive relevance-ranked results with problem_statement and key_findings fields weighted higher than title
   4. Search results show the same maturity and review status signals as catalog cards; clicking a result opens the full innovation record
   5. When search returns zero results, the user sees guidance to submit a mission problem (links to F5 form); when the catalog is empty, curators see a prompt to create the first record
-**Plans**: TBD
+**Plans**: 4 plans in 2 waves
 
 Plans:
-- [ ] 04-01: CatalogService — publication-filtered queries, multi-value filter application, sort orders, pagination, facet endpoint
-- [ ] 04-02: CatalogPage — CatalogGrid, CatalogCard components, FilterPanel, SortControl, Pagination, empty state
-- [ ] 04-03: SearchService — PostgreSQL FTS with weighted tsvector, query sanitization, relevance ranking, CURATOR vs PUBLIC scoping
-- [ ] 04-04: SearchPage — SearchResultsList with highlight snippets, filter panel, empty-state CTA, bookmarkable URL state
+- [ ] 04-01-PLAN.md — CatalogService (TDD): publication-filtered queries, multi-value filter application, sort orders, pagination, facet endpoint + integration tests [Wave 1]
+- [ ] 04-02-PLAN.md — CatalogPage: CatalogGrid, CatalogCard partial, FilterPanel (AJAX/fetch-based no reload), SortControl, Pagination, empty states + Playwright/axe-core [Wave 2]
+- [ ] 04-03-PLAN.md — SearchService (TDD): PostgreSQL FTS plainto_tsquery + ts_rank + ts_headline, query sanitization, relevance ranking, PUBLIC/CURATOR scoping + integration tests [Wave 1]
+- [ ] 04-04-PLAN.md — SearchPage: SearchResultsList with highlight snippets, filter panel, zero-results CTA (/submit stub), bookmarkable URL state + Playwright/axe-core [Wave 2]
 
 ### Phase 5: Engagement & Opportunity Submission
 **Goal**: A stakeholder can submit a mission problem for I&R consideration and can request a demo, adoption discussion, or technical guidance from any innovation record; all engagement is logged and routed to the I&R team via the configurable email address.
@@ -142,6 +142,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation & Platform | 0/5 | Not started | - |
 | 2. Content Model & Admin Interface | 0/3 | Planned (3 plans, 2 waves) | - |
 | 3. Innovation Record & Perspectives | 0/4 | Planned (4 plans, 3 waves) | - |
-| 4. Catalog & Search | 0/4 | Not started | - |
+| 4. Catalog & Search | 0/4 | Planned (4 plans, 2 waves) | - |
 | 5. Engagement & Opportunity Submission | 0/3 | Not started | - |
 | 6. Content Seeding & Launch Polish | 0/5 | Not started | - |
