@@ -69,13 +69,13 @@ Plans:
   3. Trust disclaimers (POC ≠ production-ready, Published ≠ approved for adoption, etc.) are rendered visibly on every published record based on maturity level and source type — curator cannot suppress them
   4. A curator can create a structured innovation record linked to an existing SharePoint lessons-learned document, making it discoverable without relocating the original — the artifact link points to the external source
   5. Artifact links open in a new tab; no document content is embedded or hosted by the Hub
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 03-01: Innovation record data model — RecordService, all fields, key findings array, artifact links, engagement options, trust disclaimer rendering
-- [ ] 03-02: Public RecordPage — all content sections, TrustDisclaimerBlock, RecordMetaFooter, NextActionPanel (stub)
-- [ ] 03-03: PerspectiveToggle — Executive/Technical tab rendering, per-perspective CTAs, optional `?view=` URL param
-- [ ] 03-04: Lessons-learned integration workflow — artifact link management in admin, external URL validation, integration notes in curation UI
+- [ ] 03-01-PLAN.md — RecordService trust disclaimer 4-rule logic + GET /api/v1/records/:id public API + integration tests [Wave 1, TDD]
+- [ ] 03-02-PLAN.md — Public record page EJS (all content sections, TrustDisclaimerBlock, artifact links, NextActionPanel stub) + Playwright axe-core [Wave 2]
+- [ ] 03-03-PLAN.md — Perspective toggle (Executive/Technical tab, client-side JS no-reload, ?view= URL param, keyboard nav) + Playwright axe-core [Wave 3]
+- [ ] 03-04-PLAN.md — Lessons-learned admin workflow (artifact link guidance text, non-blocking HEAD reachability check, advisory + audit log) + Playwright axe-core [Wave 2, parallel with 03-02]
 
 ### Phase 4: Catalog & Search
 **Goal**: A stakeholder arriving at the Hub can browse all published innovation records in a filterable catalog and can search using problem-oriented natural language to surface relevant records without knowing the project name or team.
@@ -141,7 +141,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform | 0/5 | Not started | - |
 | 2. Content Model & Admin Interface | 0/3 | Planned (3 plans, 2 waves) | - |
-| 3. Innovation Record & Perspectives | 0/4 | Not started | - |
+| 3. Innovation Record & Perspectives | 0/4 | Planned (4 plans, 3 waves) | - |
 | 4. Catalog & Search | 0/4 | Not started | - |
 | 5. Engagement & Opportunity Submission | 0/3 | Not started | - |
 | 6. Content Seeding & Launch Polish | 0/5 | Not started | - |
