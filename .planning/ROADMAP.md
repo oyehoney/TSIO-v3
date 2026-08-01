@@ -52,12 +52,12 @@ Plans:
   3. The publication lifecycle state machine (Draft → Review → Published → Superseded/Archived) is enforced at the service layer; a record cannot skip states
   4. The governance gate blocks publication if any pub-required field (problem statement, named owner, maturity, review status, source artifact, last-reviewed date, disclaimer) is missing — and lists the blocking fields
   5. Only Published records are visible to non-curator users; Draft and Review records are hidden from public routes
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 02-01: Content model — maturity/review status enums, trust disclaimer logic, GovernanceGateService, PublicationLifecycleService
-- [ ] 02-02: Admin record management — RecordEditPage (all fields, tabbed), PublicationStateControls, GovernanceGateFeedback
-- [ ] 02-03: Admin record list, dashboard summary tiles, content model reference page
+- [ ] 02-01-PLAN.md — Content model services (TDD): GovernanceGateService, PublicationLifecycleService, RecordService, RecordRepository, all 14 admin API endpoints [Wave 1]
+- [ ] 02-02-PLAN.md — Admin record new/edit EJS pages: tabbed form, publication state controls, governance gate feedback, Playwright + axe-core [Wave 2]
+- [ ] 02-03-PLAN.md — Admin record list, dashboard summary tiles, content model reference page, Playwright + axe-core [Wave 2]
 
 ### Phase 3: Innovation Record & Perspectives
 **Goal**: A stakeholder can open a published innovation record and see all structured content — problem context, findings, maturity/readiness, reuse guidance, ownership, artifact links, and next-action options — and can switch between an executive and technical perspective of the same record.
@@ -140,7 +140,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform | 0/5 | Not started | - |
-| 2. Content Model & Admin Interface | 0/3 | Not started | - |
+| 2. Content Model & Admin Interface | 0/3 | Planned (3 plans, 2 waves) | - |
 | 3. Innovation Record & Perspectives | 0/4 | Not started | - |
 | 4. Catalog & Search | 0/4 | Not started | - |
 | 5. Engagement & Opportunity Submission | 0/3 | Not started | - |
