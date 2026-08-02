@@ -1,0 +1,394 @@
+<%- include('partials/layout-head', { pageTitle: record.title }) %>
+
+<%- include('partials/top-nav') %>
+
+<main class="record-page" id="main-content">
+
+  <!-- Breadcrumb — always present; links to /catalog per UX Navigation Map -->
+  <nav aria-label="Breadcrumb" class="record-breadcrumb">
+    <a href="/catalog" data-testid="breadcrumb-catalog">&#8592; Back to Catalog</a>
+  </nav>
+
+  <!-- Record Header -->
+  <header class="record-header">
+    <h1 class="record-title" data-testid="record-title"><%= record.title %></h1>
+
+    <div class="record-badges">
+      <%- include('partials/maturity-badge', { maturity_level: record.maturity_level, maturity_label: record.maturity_label }) %>
+      <%- include('partials/review-status-badge', { review_status: record.review_status, review_status_label: record.review_status_label }) %>
+      <% if (record.is_community_contributed) { %>
+        <span class="badge community-badge" data-testid="community-badge" aria-label="Community contributed">COMMUNITY</span>
+      <% } %>
+      <% if (record.is_validated_for_reuse) { %>
+        <span class="badge validated-reuse-badge" data-testid="validated-reuse-badge" aria-label="Validated for reuse">Validated for Reuse &#10003;</span>
+      <% } %>
+    </div>
+
+    <div class="record-header-meta">
+      <span data-testid="record-owner">Owner: <%= record.owner_name %></span>
+      <% if (record.last_reviewed_date) { %>
+        <span> &middot; Last reviewed: <%= record.last_reviewed_date %></span>
+      <% } %>
+    </div>
+
+    <% if (record.mission_area_tags && record.mission_area_tags.length > 0) { %>
+      <div class="tag-list" aria-label="Mission areas" data-testid="mission-tags">
+        <% record.mission_area_tags.forEach(function(tag) { %>
+          <span class="tag tag--mission">&#127991; <%= tag %></span>
+        <% }); %>
+      </div>
+    <% } %>
+  </header>
+
+  <!-- ─── Perspective Toggle ──────────────────────────────────────────────── -->
+  <!-- Always visible; client-side JS (below) shows/hides panels on click -->
+  <div role="tablist" aria-label="Perspective" class="perspective-toggle" data-testid="perspective-toggle">
+    <button
+      role="tab"
+      id="tab-executive"
+      aria-selected="<%= currentView === 'executive' ? 'true' : 'false' %>"
+      aria-controls="executive-panel"
+      class="perspective-tab<%= currentView === 'executive' ? ' perspective-tab--active' : '' %>"
+      data-view="executive"
+      data-testid="tab-executive"
+    >
+      Executive View
+    </button>
+    <button
+      role="tab"
+      id="tab-technical"
+      aria-selected="<%= currentView === 'technical' ? 'true' : 'false' %>"
+      aria-controls="technical-panel"
+      class="perspective-tab<%= currentView === 'technical' ? ' perspective-tab--active' : '' %>"
+      data-view="technical"
+      data-testid="tab-technical"
+    >
+      Technical View
+    </button>
+  </div>
+
+  <!-- ─── Executive Perspective Panel ─────────────────────────────────────── -->
+  <div
+    id="executive-panel"
+    role="tabpanel"
+    aria-labelledby="tab-executive"
+    class="perspective-panel"
+    data-testid="executive-panel"
+    style="<%= currentView === 'executive' ? '' : 'display:none' %>"
+  >
+    <!-- MISSION PROBLEM -->
+    <section class="record-section">
+      <h2 class="record-section-heading">MISSION PROBLEM</h2>
+      <p><%= record.problem_statement %></p>
+    </section>
+
+    <!-- EXECUTIVE PERSPECTIVE -->
+    <% if (record.executive_perspective_text) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">EXECUTIVE PERSPECTIVE</h2>
+        <p><%= record.executive_perspective_text %></p>
+      </section>
+    <% } %>
+
+    <!-- DECISION RECOMMENDATION -->
+    <% if (record.executive_recommendation) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">DECISION RECOMMENDATION</h2>
+        <p><%= record.executive_recommendation %></p>
+      </section>
+    <% } %>
+
+    <!-- OUTCOME SUMMARY -->
+    <section class="record-section">
+      <h2 class="record-section-heading">OUTCOME SUMMARY</h2>
+      <p><%= record.outcome_summary %></p>
+    </section>
+
+    <!-- KEY FINDINGS -->
+    <% if (record.key_findings && record.key_findings.length > 0) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">KEY FINDINGS</h2>
+        <ul class="key-findings-list" data-testid="key-findings">
+          <% record.key_findings.forEach(function(finding) { %>
+            <li><%= finding %></li>
+          <% }); %>
+        </ul>
+      </section>
+    <% } %>
+
+    <!-- Maturity meta -->
+    <section class="record-section record-section--meta">
+      <p>
+        <strong>Maturity:</strong> <%= record.maturity_label %> &nbsp;&middot;&nbsp;
+        <strong>Review Status:</strong> <%= record.review_status_label %> &nbsp;&middot;&nbsp;
+        <strong>Reuse Potential:</strong> <%= record.reuse_potential %>
+      </p>
+    </section>
+  </div>
+
+  <!-- ─── Technical Perspective Panel ─────────────────────────────────────── -->
+  <div
+    id="technical-panel"
+    role="tabpanel"
+    aria-labelledby="tab-technical"
+    class="perspective-panel"
+    data-testid="technical-panel"
+    style="<%= currentView === 'technical' ? '' : 'display:none' %>"
+  >
+    <!-- MISSION PROBLEM -->
+    <section class="record-section">
+      <h2 class="record-section-heading">MISSION PROBLEM</h2>
+      <p><%= record.problem_statement %></p>
+    </section>
+
+    <!-- WHAT WAS EXPLORED -->
+    <section class="record-section">
+      <h2 class="record-section-heading">WHAT WAS EXPLORED</h2>
+      <p><%= record.what_was_explored %></p>
+    </section>
+
+    <!-- TECHNICAL DETAILS -->
+    <section class="record-section">
+      <h2 class="record-section-heading">TECHNICAL DETAILS</h2>
+      <% if (record.technical_perspective_text) { %>
+        <p><%= record.technical_perspective_text %></p>
+      <% } else { %>
+        <p class="record-placeholder-text">
+          Technical detail for this record is not yet available. Contact the I&amp;R team for more information.
+        </p>
+      <% } %>
+    </section>
+
+    <!-- SECURITY FINDINGS -->
+    <section class="record-section">
+      <h2 class="record-section-heading">SECURITY FINDINGS</h2>
+      <% if (!record.security_findings) { %>
+        <p class="security-not-reviewed-warning" role="note" style="color: #D97706;" data-testid="security-not-reviewed">
+          &#9888; Security review has NOT been completed for this record. Local security assessment
+          required before any adoption consideration.
+        </p>
+      <% } else { %>
+        <p><%= record.security_findings %></p>
+      <% } %>
+    </section>
+
+    <!-- PERFORMANCE FINDINGS -->
+    <% if (record.performance_findings) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">PERFORMANCE FINDINGS</h2>
+        <p><%= record.performance_findings %></p>
+      </section>
+    <% } %>
+
+    <!-- REUSE GUIDANCE -->
+    <% if (record.reuse_guidance) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">REUSE GUIDANCE</h2>
+        <p><%= record.reuse_guidance %></p>
+      </section>
+    <% } %>
+
+    <!-- KEY FINDINGS -->
+    <% if (record.key_findings && record.key_findings.length > 0) { %>
+      <section class="record-section">
+        <h2 class="record-section-heading">KEY FINDINGS</h2>
+        <ul class="key-findings-list" data-testid="key-findings-technical">
+          <% record.key_findings.forEach(function(finding) { %>
+            <li><%= finding %></li>
+          <% }); %>
+        </ul>
+      </section>
+    <% } %>
+
+    <!-- OUTCOME SUMMARY -->
+    <section class="record-section">
+      <h2 class="record-section-heading">OUTCOME SUMMARY</h2>
+      <p><%= record.outcome_summary %></p>
+    </section>
+
+    <!-- Technology area tags -->
+    <% if (record.technology_area_tags && record.technology_area_tags.length > 0) { %>
+      <section class="record-section">
+        <div class="tag-list" data-testid="tech-tags">
+          <% record.technology_area_tags.forEach(function(tag) { %>
+            <span class="tag tag--technology">&#127991; <%= tag %></span>
+          <% }); %>
+        </div>
+      </section>
+    <% } %>
+  </div>
+
+  <!-- ─── Trust & Limitations ──────────────────────────────────────────────── -->
+  <!-- Rendered BEFORE Next-Action panel in both views. Always system-generated, non-suppressible. -->
+  <!-- T-11-06: trust_disclaimers computed server-side by TrustDisclaimerService -->
+  <% if (record.trust_disclaimers && record.trust_disclaimers.length > 0) { %>
+    <section
+      class="trust-disclaimers"
+      aria-label="Trust and Limitations"
+      data-testid="trust-disclaimers"
+      style="background: #FEF3C7; border-left: 4px solid #D97706; padding: 16px 20px; margin: 24px 0;"
+    >
+      <h3 style="margin: 0 0 12px; color: #92400E;">
+        &#9888; TRUST &amp; LIMITATIONS
+      </h3>
+      <p style="margin: 0 0 8px; color: #78350F;">
+        The following statements apply to this record:
+      </p>
+      <ul style="margin: 0; padding-left: 20px;" data-testid="disclaimer-list">
+        <% record.trust_disclaimers.forEach(function(text) { %>
+          <li style="color: #78350F; margin-bottom: 8px;"><%= text %></li>
+        <% }); %>
+      </ul>
+    </section>
+  <% } %>
+
+  <!-- ─── Next-Action Panel ────────────────────────────────────────────────── -->
+  <!-- Wave 5 will wire engagement modal to these buttons -->
+  <% const actionableOptions = (record.engagement_options || []).filter(function(opt) { return opt !== 'SUBMIT_RELATED_PROBLEM'; }); %>
+  <% if (actionableOptions.length > 0) { %>
+    <section class="next-action-panel" aria-label="Next Actions" data-testid="next-action-panel">
+      <h2 class="record-section-heading">NEXT ACTIONS</h2>
+      <div class="next-action-buttons">
+        <%
+        const engagementLabels = {
+          REQUEST_BRIEFING: 'Request a Briefing',
+          REQUEST_DEMO: 'Request a Demo',
+          REQUEST_ADOPTION_DISCUSSION: 'Request Adoption Discussion',
+          REQUEST_TECHNICAL_GUIDANCE: 'Request Technical Guidance',
+          SUBMIT_RELATED_PROBLEM: 'Submit a Related Problem',
+        };
+        const executivePrimary = ['REQUEST_BRIEFING', 'REQUEST_DEMO'];
+        const technicalPrimary = ['REQUEST_TECHNICAL_GUIDANCE'];
+        %>
+        <% actionableOptions.forEach(function(optType) { %>
+          <% const isPrimary = (currentView === 'executive' ? executivePrimary : technicalPrimary).includes(optType); %>
+          <button
+            class="engagement-btn <%= isPrimary ? 'engagement-btn--primary' : 'engagement-btn--secondary' %>"
+            aria-label="<%= engagementLabels[optType] %>"
+            data-engagement-type="<%= optType %>"
+            data-testid="engagement-btn-<%= optType.toLowerCase().replace(/_/g, '-') %>"
+          >
+            <%= engagementLabels[optType] %>
+          </button>
+        <% }); %>
+      </div>
+      <!-- Cross-perspective link per UX Mockup -->
+      <% if (currentView === 'executive') { %>
+        <div class="perspective-crosslink">
+          <a href="?view=technical" data-testid="crosslink-technical">View Technical Details &#8594;</a>
+        </div>
+      <% } else { %>
+        <div class="perspective-crosslink">
+          <a href="?view=executive" data-testid="crosslink-executive">View Executive Summary &#8594;</a>
+        </div>
+      <% } %>
+    </section>
+  <% } %>
+
+  <!-- ─── Artifact Links ───────────────────────────────────────────────────── -->
+  <!-- T-11-05: External links with target=_blank rel=noopener noreferrer -->
+  <%
+  const sortedArtifacts = (record.artifact_links || []).slice().sort(function(a, b) {
+    return (a.display_order || 0) - (b.display_order || 0);
+  });
+  const artifactHeading = currentView === 'technical' ? 'TECHNICAL ARTIFACTS' : 'SOURCE DOCUMENTS & ARTIFACTS';
+  const artifactIcons = {
+    DOCUMENT: '\uD83D\uDCC4',
+    CODE_REPOSITORY: '\uD83D\uDD27',
+    VIDEO: '\uD83C\uDFAC',
+    DIAGRAM: '\uD83D\uDCD0',
+    OTHER: '\uD83D\uDD17',
+  };
+  %>
+  <% if (sortedArtifacts.length > 0) { %>
+    <section class="artifact-links-section" data-testid="artifact-links-section">
+      <h2 class="record-section-heading"><%= artifactHeading %></h2>
+      <ul class="artifact-links-list">
+        <% sortedArtifacts.forEach(function(link) { %>
+          <li class="artifact-link-item">
+            <span aria-hidden="true"><%= artifactIcons[link.artifact_type] || '\uD83D\uDD17' %></span>
+            <a
+              href="<%= link.url %>"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="<%= link.label %> (opens in new tab)"
+              class="artifact-link"
+              data-testid="artifact-link"
+            >
+              <%= link.label %>
+              <span aria-hidden="true"> &#8599;</span>
+            </a>
+          </li>
+        <% }); %>
+      </ul>
+      <p class="artifact-links-note" style="font-size: 0.85em; color: #6B7280;">
+        External links — opens in new tab. Hub does not host or cache these documents.
+      </p>
+    </section>
+  <% } %>
+
+  <!-- ─── Record Footer ────────────────────────────────────────────────────── -->
+  <footer class="record-footer">
+    <p>Owner: <%= record.owner_name %> &middot; Contributing Office: <%= record.contributing_office %></p>
+    <% if (record.published_at) { %>
+      <p>Published: <%= new Date(record.published_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></p>
+    <% } %>
+    <% if (record.last_reviewed_date) { %>
+      <p>Last Reviewed: <%= record.last_reviewed_date %></p>
+    <% } %>
+    <p class="record-id-display">Record ID: <%= record.record_id %></p>
+  </footer>
+
+</main>
+
+<!-- ─── Perspective Toggle: Client-side JS ──────────────────────────────────── -->
+<!--
+  Pure client-side JS for tab switching (no page reload).
+  Security: T-11-03 — view param validated server-side; tab data-view is from allowlist.
+  Pushes ?view=executive|technical to URL history on tab click.
+-->
+<script>
+(function() {
+  'use strict';
+
+  var execPanel = document.getElementById('executive-panel');
+  var techPanel = document.getElementById('technical-panel');
+  var execTab   = document.getElementById('tab-executive');
+  var techTab   = document.getElementById('tab-technical');
+
+  if (!execPanel || !techPanel || !execTab || !techTab) return;
+
+  function activateView(view) {
+    // Validate against allowlist — T-11-03
+    if (view !== 'executive' && view !== 'technical') view = 'executive';
+
+    var isExec = view === 'executive';
+
+    // Show/hide panels
+    execPanel.style.display = isExec ? '' : 'none';
+    techPanel.style.display = isExec ? 'none' : '';
+
+    // Update tab aria-selected and active class
+    execTab.setAttribute('aria-selected', isExec ? 'true' : 'false');
+    techTab.setAttribute('aria-selected', isExec ? 'false' : 'true');
+
+    if (isExec) {
+      execTab.classList.add('perspective-tab--active');
+      techTab.classList.remove('perspective-tab--active');
+    } else {
+      techTab.classList.add('perspective-tab--active');
+      execTab.classList.remove('perspective-tab--active');
+    }
+
+    // Update URL ?view= param without page reload
+    var url = new URL(window.location.href);
+    url.searchParams.set('view', view);
+    window.history.replaceState({}, '', url.toString());
+  }
+
+  execTab.addEventListener('click', function() { activateView('executive'); });
+  techTab.addEventListener('click', function() { activateView('technical'); });
+})();
+</script>
+
+<%- include('partials/layout-foot') %>

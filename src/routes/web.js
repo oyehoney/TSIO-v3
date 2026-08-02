@@ -10,10 +10,11 @@
  *   GET /submit-opportunity → placeholder stub
  *   GET /share-innovation   → placeholder stub
  *   GET /search             → placeholder stub
- *   GET /records/:id        → placeholder stub (RecordPage — implemented in Wave 4c)
+ *   GET /records/:id        → RecordPage (EJS template — Wave 4c, Plan 11)
  */
 
 const express = require('express');
+const { getDb } = require('../db');
 const { listCatalog, getFilterOptions } = require('../services/CatalogService');
 
 const MATURITY_LABELS = {
@@ -157,9 +158,37 @@ function webRouter(getPool) {
   const { handleSearchPage } = require('../handlers/searchPageHandler');
   router.get('/search', handleSearchPage);
 
-  // GET /records/:id — stub placeholder (Wave 4c)
-  router.get('/records/:id', (req, res) => {
-    res.render('placeholder', { pageTitle: 'Innovation Record' });
+  // GET /records/:id — Innovation Record page (Wave 4c, Plan 11)
+  // Fetches record from recordService and renders EJS template with PerspectiveToggle,
+  // TrustDisclaimersSection, ArtifactLinks, and NextActionPanel.
+  // Security: T-11-03 — ?view= param validated against allowlist before use.
+  // Security: T-11-02 — 404 from recordService renders record-not-found.ejs with no record data.
+  const recordService = require('../services/recordService');
+
+  router.get('/records/:id', async (req, res) => {
+    const { id } = req.params;
+
+    // T-11-03: Validate ?view= param against allowlist — any other value defaults to 'executive'
+    const rawView = req.query.view;
+    const currentView = (rawView === 'technical') ? 'technical' : 'executive';
+
+    try {
+      // PUBLIC role — non-published records return 404 from recordService
+      const record = await recordService.getRecord(getDb(), id, 'PUBLIC');
+
+      res.render('record', {
+        pageTitle: record.title,
+        record,
+        currentView,
+      });
+    } catch (err) {
+      if (err && err.code === 'RECORD_NOT_FOUND') {
+        return res.status(404).render('record-not-found', {});
+      }
+      // Unexpected error — render 404 page (no internal error details exposed)
+      console.error('RecordPage render error:', err);
+      return res.status(404).render('record-not-found', {});
+    }
   });
 
   return router;

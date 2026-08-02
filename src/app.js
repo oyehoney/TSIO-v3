@@ -118,6 +118,15 @@ function createApp(options = {}) {
   const settingsRouter = require('./routes/settings.routes');
   app.use('/api/v1', settingsRouter);
 
+  // Test-seed routes — ONLY registered in non-production environments
+  // Security: T-11-07 — test harness endpoints must NEVER be active in production.
+  // The Wave 7 integration plan should add a production smoke test that asserts
+  // /api/v1/test-seed/published-record returns 404 in the production build.
+  if (process.env.NODE_ENV !== 'production') {
+    const testSeedRouter = require('./routes/testSeed');
+    app.use('/api/v1/test-seed', testSeedRouter);
+  }
+
   // 404 handler — return JSON for /api/* paths, HTML for browser paths
   app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
