@@ -123,14 +123,14 @@ Plans:
   4. The Hub meets WCAG 2.1 AA accessibility standards (keyboard navigation, screen reader compatibility, sufficient color contrast on maturity/review status badges)
   5. The public catalog loads within 3 seconds under normal load; a curator can create and publish a record from scratch in under 60 minutes
   6. ATO-support documentation package is complete: data classification of all stored fields, system boundary diagram, authentication/authorization controls description, audit log coverage table, and identified open risk items
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 06-01: Audio Security POC record — curate full record from lessons-learned document, all structured fields, executive + technical perspectives
-- [ ] 06-02: Additional seed records (2+ POCs, 1 archived experiment) — curate and publish
-- [ ] 06-03: Trust disclaimer UI polish — visual prominence audit, color contrast, badge accessibility
-- [ ] 06-04: WCAG 2.1 AA audit and remediation — keyboard navigation, ARIA labels, screen reader testing
-- [ ] 06-05: ATO documentation package + performance baseline — system boundary diagram, data classification table, controls summary, launch readiness checklist
+- [ ] 06-01-PLAN.md — Audio Security POC seed script: idempotent Knex seed inserting full record + 5 findings + 6 tags + 1 artifact link + 2 engagement options [Wave 1]
+- [ ] 06-02-PLAN.md — Additional seed records: AI Redaction POC (PUBLISHED) + Blockchain Experiment (ARCHIVED) + integration tests for scoping [Wave 2, parallel]
+- [ ] 06-03-PLAN.md — Trust disclaimer polish: BADGE_COLORS map + WCAG contrast verification + all 4-rule combination tests [Wave 2, parallel]
+- [ ] 06-04-PLAN.md — WCAG 2.1 AA audit: API field presence tests + HTTP semantic tests + docs/wcag-audit.md with badge contrast table and manual checklist [Wave 2, parallel]
+- [ ] 06-05-PLAN.md — ATO documentation package + performance baseline: 5 docs in docs/ato-support/ + docs/PERFORMANCE.md + p95 < 3s integration test [Wave 3]
 
 ## Progress
 
@@ -144,4 +144,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Innovation Record & Perspectives | 0/4 | Planned (4 plans, 3 waves) | - |
 | 4. Catalog & Search | 0/4 | Planned (4 plans, 2 waves) | - |
 | 5. Engagement & Opportunity Submission | 0/3 | Planned (3 plans, 2 waves) | - |
-| 6. Content Seeding & Launch Polish | 0/5 | Not started | - |
+| 6. Content Seeding & Launch Polish | 0/5 | Planned (5 plans, 3 waves) | - |
