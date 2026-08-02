@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TSIO Innovation Hub</title>
+    <style>
+      /* Base styles for TSIO Innovation Hub */
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9fafb;
+        color: #111827;
+      }
+      .record-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+      }
+      .record-breadcrumb {
+        margin-bottom: 16px;
+      }
+      .record-breadcrumb a {
+        color: #1D4ED8;
+        text-decoration: none;
+      }
+      .record-breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .record-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #E5E7EB;
+      }
+      .record-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 12px;
+        color: #111827;
+      }
+      .record-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .maturity-badge,
+      .review-status-badge,
+      .community-badge,
+      .validated-reuse-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .review-status-badge {
+        background: #DBEAFE;
+        color: #1E40AF;
+      }
+      .community-badge {
+        background: #FDE68A;
+        color: #92400E;
+      }
+      .validated-reuse-badge {
+        background: #D1FAE5;
+        color: #065F46;
+      }
+      .record-header-meta {
+        font-size: 0.9rem;
+        color: #6B7280;
+        margin-bottom: 8px;
+      }
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        background: #F3F4F6;
+        color: #374151;
+      }
+      .perspective-toggle {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid #E5E7EB;
+        margin-bottom: 24px;
+      }
+      .perspective-tab {
+        padding: 10px 24px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #6B7280;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+      }
+      .perspective-tab:hover {
+        color: #111827;
+      }
+      .perspective-tab--active {
+        color: #1D4ED8;
+        border-bottom-color: #1D4ED8;
+        font-weight: 600;
+      }
+      .perspective-panel {
+        margin-bottom: 24px;
+      }
+      .record-section {
+        margin-bottom: 24px;
+      }
+      .record-section-heading {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6B7280;
+        margin: 0 0 8px;
+        border-bottom: 1px solid #F3F4F6;
+        padding-bottom: 4px;
+      }
+      .record-section p {
+        margin: 0;
+        line-height: 1.6;
+        color: #374151;
+      }
+      .key-findings-list {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .key-findings-list li {
+        margin-bottom: 6px;
+        line-height: 1.6;
+        color: #374151;
+      }
+      .record-placeholder-text {
+        font-style: italic;
+        color: #9CA3AF;
+      }
+      .security-not-reviewed-warning {
+        font-weight: 500;
+      }
+      .artifact-links-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .artifact-link-item {
+        margin-bottom: 10px;
+      }
+      .artifact-link {
+        color: #1D4ED8;
+        text-decoration: none;
+      }
+      .artifact-link:hover {
+        text-decoration: underline;
+      }
+      .next-action-panel {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 24px 0;
+      }
+      .next-action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .engagement-btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: none;
+      }
+      .engagement-btn--primary {
+        background: #1D4ED8;
+        color: #fff;
+      }
+      .engagement-btn--primary:hover {
+        background: #1E40AF;
+      }
+      .engagement-btn--secondary {
+        background: #fff;
+        color: #1D4ED8;
+        border: 1px solid #BFDBFE;
+      }
+      .engagement-btn--secondary:hover {
+        background: #EFF6FF;
+      }
+      .perspective-crosslink {
+        margin-top: 12px;
+        font-size: 0.9rem;
+      }
+      .perspective-crosslink a {
+        color: #6B7280;
+        text-decoration: none;
+      }
+      .perspective-crosslink a:hover {
+        text-decoration: underline;
+        color: #374151;
+      }
+      .record-footer {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #E5E7EB;
+        font-size: 0.85rem;
+        color: #9CA3AF;
+      }
+      .record-footer p {
+        margin: 4px 0;
+      }
+      .record-id-display {
+        font-family: monospace;
+        font-size: 0.75rem;
+      }
+      .not-found-page {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 0 20px;
+        text-align: center;
+      }
+      .not-found-page h1 {
+        font-size: 2rem;
+        color: #374151;
+      }
+      .not-found-page a {
+        color: #1D4ED8;
+        text-decoration: none;
+      }
+      .not-found-page a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/client/main.tsx"></script>
+  </body>
+</html>
