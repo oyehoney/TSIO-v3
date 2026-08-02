@@ -194,6 +194,7 @@ export const ReadinessChecklist: React.FC<ReadinessChecklistProps> = ({ record, 
         borderRadius: '8px',
         overflow: 'hidden',
       }}
+      data-testid="readiness-checklist"
     >
       {/* Header */}
       <div

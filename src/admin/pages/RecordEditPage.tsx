@@ -24,6 +24,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { adminApiClient } from '../api/adminApiClient';
 import { ReadinessChecklist, getMissingPubRequiredFields, RecordFormValues, ArtifactLink } from '../components/ReadinessChecklist';
 import { PublicationStateChip } from '../components/PublicationStateChip';
+import { PublicationLifecycleControls, PublicationState } from '../components/PublicationLifecycleControls';
+import { GovernanceGateFeedback } from '../components/GovernanceGateFeedback';
+import { MaturityLevelDropdown, ReviewStatusDropdown } from '../components/MaturityStatusDropdowns';
+import { ConfirmationDialog } from '../components/ConfirmationDialog';
 
 // ── Maturity definitions (F9 / PRD §6.1) ────────────────────────────────────
 const MATURITY_DEFINITIONS: Record<string, string> = {
@@ -162,12 +166,16 @@ export const RecordEditPage: React.FC = () => {
 
   const [form, setForm] = useState<RecordFormValues>({ ...EMPTY_FORM });
   const [originalState, setOriginalState] = useState<string>('DRAFT');
+  // publicationState mirrors form.publication_state but as a typed PublicationState
+  // so PublicationLifecycleControls gets the correct type
+  const [publicationStateTyped, setPublicationStateTyped] = useState<PublicationState>('DRAFT');
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [saveIndicator, setSaveIndicator] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [apiError, setApiError] = useState<string | null>(null);
   const [transitionError, setTransitionError] = useState<string | null>(null);
   const [governanceErrors, setGovernanceErrors] = useState<string[]>([]);
+  const [blockingFields, setBlockingFields] = useState<string[]>([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [pendingEdit, setPendingEdit] = useState(false);
   const [tagInput, setTagInput] = useState({ mission: '', technology: '' });
@@ -224,6 +232,7 @@ export const RecordEditPage: React.FC = () => {
           };
           setForm(loaded);
           setOriginalState(loaded.publication_state || 'DRAFT');
+          setPublicationStateTyped((loaded.publication_state || 'DRAFT') as PublicationState);
           lastSavedRef.current = JSON.stringify(loaded);
         })
         .catch((err: Error & { status?: number }) => {
@@ -304,8 +313,10 @@ export const RecordEditPage: React.FC = () => {
       if (id) {
         const updated = await adminApiClient.getRecord(id);
         const u = updated as Record<string, unknown>;
-        setForm(prev => ({ ...prev, publication_state: String(u.publication_state || prev.publication_state) }));
-        setOriginalState(String(u.publication_state || 'DRAFT'));
+        const newState = String(u.publication_state || 'DRAFT');
+        setForm(prev => ({ ...prev, publication_state: newState }));
+        setOriginalState(newState);
+        setPublicationStateTyped(newState as PublicationState);
       }
     } catch (err) {
       const e = err as Error & { status?: number; code?: string };
@@ -313,6 +324,33 @@ export const RecordEditPage: React.FC = () => {
       setTransitionError(e.message || `Transition failed (${action})`);
     }
   }, [form, id]);
+
+  // ── PublicationLifecycleControls callbacks ─────────────────────────────────
+  /** Called by PublicationLifecycleControls when a lifecycle transition succeeds */
+  const handleLifecycleTransitionSuccess = useCallback((newState: string, publishedAt?: string) => {
+    setPublicationStateTyped(newState as PublicationState);
+    setBlockingFields([]);
+    setGovernanceErrors([]);
+    setTransitionError(null);
+    setForm(prev => ({
+      ...prev,
+      publication_state: newState,
+      ...(publishedAt ? { published_at: publishedAt } : {}),
+    }));
+    setOriginalState(newState);
+  }, []);
+
+  /** Called by PublicationLifecycleControls when a lifecycle transition fails */
+  const handleLifecycleTransitionError = useCallback((code: string, fields?: string[]) => {
+    if (code === 'PUBLICATION_GATE_FAILED' && fields && fields.length > 0) {
+      setBlockingFields(fields);
+      setGovernanceErrors([]); // GovernanceGateFeedback handles display from blockingFields
+    } else if (code === 'INVALID_SUPERSEDES_REF') {
+      setTransitionError('The superseding record ID does not exist.');
+    } else {
+      setTransitionError(`Transition failed: ${code}`);
+    }
+  }, []);
 
   // ── Published record edit warning ─────────────────────────────────────────
   const handleEditPublished = useCallback(() => {
@@ -331,7 +369,7 @@ export const RecordEditPage: React.FC = () => {
   const missingPubRequired = getMissingPubRequiredFields(form);
   const hasMissingPubRequired = missingPubRequired.length > 0;
 
-  const pubState = form.publication_state || 'DRAFT';
+  const pubState = publicationStateTyped || (form.publication_state as PublicationState) || 'DRAFT';
 
   if (loading) {
     return (
@@ -374,7 +412,9 @@ export const RecordEditPage: React.FC = () => {
             <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', margin: 0 }}>
               {isNew ? 'New Innovation Record' : (form.title || 'Edit Record')}
             </h1>
-            <PublicationStateChip state={pubState} />
+            <span data-testid="publication-state-badge">
+              <PublicationStateChip state={pubState} />
+            </span>
           </div>
           {!isNew && form.record_id && (
             <p style={{ color: '#9CA3AF', fontSize: '0.75rem', margin: 0, fontFamily: 'monospace' }}>
@@ -574,86 +614,30 @@ export const RecordEditPage: React.FC = () => {
           <div style={sectionStyle}>
             <h2 style={sectionHeadingStyle}>Governance &amp; Classification</h2>
 
-            {/* Maturity Level with inline definition */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={labelStyle}>
-                Maturity Level <PubRequiredDot />
-              </label>
-              <select
-                name="maturity_level"
-                value={form.maturity_level || ''}
-                onChange={e => updateForm('maturity_level', e.target.value)}
-                style={{ ...inputStyle }}
-              >
-                <option value="">— Select maturity level —</option>
-                <option value="IDEA">IDEA</option>
-                <option value="EXPERIMENT_POC">EXPERIMENT / POC</option>
-                <option value="PROTOTYPE_PILOT">PROTOTYPE / PILOT</option>
-                <option value="PRODUCTION_VALIDATED">PRODUCTION / VALIDATED</option>
-                <option value="ARCHIVED">ARCHIVED</option>
-              </select>
-              {form.maturity_level && MATURITY_DEFINITIONS[form.maturity_level] && (
-                <div style={definitionStyle}>
-                  <strong>{form.maturity_level}:</strong> {MATURITY_DEFINITIONS[form.maturity_level]}
-                </div>
-              )}
-              <div style={helperStyle}>
-                <a href="/admin/content-model" style={{ color: '#1D4ED8', textDecoration: 'none', fontSize: '0.75rem' }}>
-                  View all maturity definitions →
-                </a>
-              </div>
+            {/* MaturityLevelDropdown — with inline definitions per US-9.3 */}
+            <MaturityLevelDropdown
+              value={form.maturity_level || ''}
+              onChange={v => updateForm('maturity_level', v)}
+              publicationState={pubState}
+              disabled={pubState === 'ARCHIVED'}
+              error={
+                blockingFields.includes('maturity_level')
+                  ? 'Maturity level is required before publishing.'
+                  : undefined
+              }
+            />
 
-              {/* ARCHIVED maturity advisory (US-9.3 AC) */}
-              {form.maturity_level === 'ARCHIVED' && originalState === 'PUBLISHED' && (
-                <div
-                  style={{
-                    backgroundColor: '#FFFBEB',
-                    border: '1px solid #FDE68A',
-                    borderRadius: '6px',
-                    padding: '12px',
-                    marginTop: '8px',
-                    fontSize: '0.8rem',
-                    color: '#92400E',
-                  }}
-                >
-                  ⚠ This record is currently published. Setting maturity to Archived indicates
-                  the innovation work is no longer active. Consider also archiving the publication
-                  state to remove it from the default catalog browse. This does not happen automatically.
-                </div>
-              )}
-            </div>
-
-            {/* Review Status with inline definition */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={labelStyle}>
-                Review Status <PubRequiredDot />
-              </label>
-              <select
-                name="review_status"
-                value={form.review_status || ''}
-                onChange={e => updateForm('review_status', e.target.value)}
-                style={{ ...inputStyle }}
-              >
-                <option value="">— Select review status —</option>
-                <option value="SUBMITTED">Submitted</option>
-                <option value="CURATED">Curated</option>
-                <option value="TECHNICALLY_REVIEWED">Technically Reviewed</option>
-                <option value="SECURITY_REVIEWED">Security Reviewed</option>
-                <option value="POLICY_REVIEWED">Policy Reviewed</option>
-                <option value="VALIDATED_FOR_REUSE">Validated for Reuse</option>
-                <option value="SUPERSEDED_RETIRED">Superseded / Retired</option>
-              </select>
-              {form.review_status && REVIEW_STATUS_DEFINITIONS[form.review_status] && (
-                <div style={definitionStyle}>
-                  <strong>{form.review_status.replace(/_/g, ' ')}:</strong> {REVIEW_STATUS_DEFINITIONS[form.review_status]}
-                </div>
-              )}
-              <div style={helperStyle}>
-                <a href="/admin/content-model" style={{ color: '#1D4ED8', textDecoration: 'none', fontSize: '0.75rem' }}>
-                  View all review status definitions →
-                </a>
-              </div>
-            </div>
+            {/* ReviewStatusDropdown — with inline definitions per US-9.3 */}
+            <ReviewStatusDropdown
+              value={form.review_status || ''}
+              onChange={v => updateForm('review_status', v)}
+              disabled={pubState === 'ARCHIVED'}
+              error={
+                blockingFields.includes('review_status')
+                  ? 'Review status is required before publishing.'
+                  : undefined
+              }
+            />
 
             {/* Reuse Potential */}
             <div style={{ marginBottom: '20px' }}>
@@ -1211,9 +1195,13 @@ export const RecordEditPage: React.FC = () => {
               padding: '16px 0',
               marginTop: '24px',
             }}
+            data-testid="lifecycle-controls-wrapper"
           >
-            {/* GovernanceGate error banner */}
-            {governanceErrors.length > 0 && (
+            {/* GovernanceGateFeedback — from PublicationLifecycleControls PUBLICATION_GATE_FAILED */}
+            <GovernanceGateFeedback blockingFields={blockingFields} />
+
+            {/* Legacy governance errors from inline transition handler */}
+            {governanceErrors.length > 0 && blockingFields.length === 0 && (
               <div
                 style={{
                   backgroundColor: '#FEF2F2',
@@ -1239,204 +1227,46 @@ export const RecordEditPage: React.FC = () => {
 
             {/* Transition error */}
             {transitionError && (
-              <div style={{ color: '#DC2626', marginBottom: '12px', fontSize: '0.875rem', backgroundColor: '#FEF2F2', padding: '10px 14px', borderRadius: '6px' }}>
+              <div
+                style={{ color: '#DC2626', marginBottom: '12px', fontSize: '0.875rem', backgroundColor: '#FEF2F2', padding: '10px 14px', borderRadius: '6px' }}
+                data-testid="save-error"
+              >
                 {transitionError}
               </div>
             )}
 
-            {/* State-dependent action buttons */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-              {/* DRAFT state buttons */}
-              {pubState === 'DRAFT' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleSaveDraft()}
-                    disabled={saving}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '6px',
-                      backgroundColor: '#FFFFFF',
-                      color: '#374151',
-                      cursor: saving ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {saving ? 'Saving…' : 'Save Draft'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasMissingPubRequired) {
-                        setGovernanceErrors(missingPubRequired);
-                      } else if (!isNew && id) {
-                        handleTransition('SUBMIT_FOR_REVIEW');
-                      }
-                    }}
-                    disabled={hasMissingPubRequired}
-                    title={hasMissingPubRequired ? `Missing ${missingPubRequired.length} required field(s)` : 'Submit for curator review'}
-                    style={{
-                      padding: '10px 20px',
-                      border: 'none',
-                      borderRadius: '6px',
-                      backgroundColor: hasMissingPubRequired ? '#E5E7EB' : '#1D4ED8',
-                      color: hasMissingPubRequired ? '#9CA3AF' : '#FFFFFF',
-                      cursor: hasMissingPubRequired ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Submit for Review ▶
-                  </button>
-                </>
-              )}
-
-              {/* REVIEW state buttons */}
-              {pubState === 'REVIEW' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleSaveDraft()}
-                    disabled={saving}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '6px',
-                      backgroundColor: '#FFFFFF',
-                      color: '#374151',
-                      cursor: saving ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Save Draft
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (hasMissingPubRequired) {
-                        setGovernanceErrors(missingPubRequired);
-                      } else if (!isNew && id) {
-                        handleTransition('PUBLISH');
-                      }
-                    }}
-                    disabled={hasMissingPubRequired}
-                    title={hasMissingPubRequired ? `Missing ${missingPubRequired.length} required field(s)` : 'Publish to public catalog'}
-                    style={{
-                      padding: '10px 20px',
-                      border: 'none',
-                      borderRadius: '6px',
-                      backgroundColor: hasMissingPubRequired ? '#E5E7EB' : '#16A34A',
-                      color: hasMissingPubRequired ? '#9CA3AF' : '#FFFFFF',
-                      cursor: hasMissingPubRequired ? 'not-allowed' : 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Publish ▶
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => !isNew && id && handleTransition('RETURN_TO_DRAFT')}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #FDE68A',
-                      borderRadius: '6px',
-                      backgroundColor: '#FFFBEB',
-                      color: '#92400E',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Return to Draft
-                  </button>
-                </>
-              )}
-
-              {/* PUBLISHED state buttons */}
-              {pubState === 'PUBLISHED' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleEditPublished}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #BFDBFE',
-                      borderRadius: '6px',
-                      backgroundColor: '#EFF6FF',
-                      color: '#1D4ED8',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Edit (moves to Review)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => !isNew && id && handleTransition('SUPERSEDE')}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #FDE68A',
-                      borderRadius: '6px',
-                      backgroundColor: '#FFFBEB',
-                      color: '#92400E',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Supersede
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => !isNew && id && handleTransition('ARCHIVE')}
-                    style={{
-                      padding: '10px 20px',
-                      border: '1px solid #D1D5DB',
-                      borderRadius: '6px',
-                      backgroundColor: '#F9FAFB',
-                      color: '#374151',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    Archive
-                  </button>
-                </>
-              )}
-
-              {/* SUPERSEDED state */}
-              {pubState === 'SUPERSEDED' && (
-                <button
-                  type="button"
-                  onClick={() => !isNew && id && handleTransition('ARCHIVE')}
-                  style={{
-                    padding: '10px 20px',
-                    border: '1px solid #D1D5DB',
-                    borderRadius: '6px',
-                    backgroundColor: '#F9FAFB',
-                    color: '#374151',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                  }}
-                >
-                  Archive
-                </button>
-              )}
-
-              {/* ARCHIVED state — read-only notice */}
-              {pubState === 'ARCHIVED' && (
-                <div style={{ color: '#9CA3AF', fontSize: '0.875rem', fontStyle: 'italic' }}>
-                  Archived records are read-only. No state transitions available.
-                </div>
-              )}
-            </div>
+            {/* PublicationLifecycleControls — state-aware action buttons for all 5 states */}
+            {!isNew && id ? (
+              <PublicationLifecycleControls
+                publicationState={pubState}
+                recordId={id}
+                canSubmitForReview={!hasMissingPubRequired}
+                isSaving={saving}
+                onSaveDraft={handleSaveDraft}
+                onTransitionSuccess={handleLifecycleTransitionSuccess}
+                onTransitionError={handleLifecycleTransitionError}
+              />
+            ) : isNew ? (
+              /* New record — just show Save / Create button */
+              <button
+                type="button"
+                onClick={() => handleSaveDraft()}
+                disabled={saving}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  backgroundColor: '#1D4ED8',
+                  color: '#FFFFFF',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                }}
+                data-testid="create-record-btn"
+              >
+                {saving ? 'Creating…' : 'Create Record'}
+              </button>
+            ) : null}
           </div>
 
           {/* ── Footer with record metadata ──────────────────────────────── */}
@@ -1465,76 +1295,33 @@ export const RecordEditPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Warning modal: editing published record ───────────────────────── */}
-      {showWarningModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-          onClick={e => { if (e.target === e.currentTarget) setShowWarningModal(false); }}
-        >
-          <div
-            style={{
-              backgroundColor: '#FFFFFF',
-              borderRadius: '12px',
-              padding: '32px',
-              maxWidth: '480px',
-              width: '90%',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-            }}
-          >
-            <div style={{ fontSize: '1.5rem', marginBottom: '12px' }}>⚠</div>
-            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#111827', marginBottom: '12px' }}>
-              This record is currently Published
-            </h2>
-            <p style={{ color: '#6B7280', fontSize: '0.875rem', marginBottom: '24px', lineHeight: 1.6 }}>
+      {/* ── Warning modal: editing published record (legacy inline path) ─────── */}
+      {/* Note: PublicationLifecycleControls handles this dialog internally via ConfirmationDialog.
+          This legacy modal is kept for backward compatibility with handleEditPublished callback. */}
+      <ConfirmationDialog
+        open={showWarningModal}
+        title="Edit Published Record"
+        body={
+          <>
+            <p style={{ marginBottom: '8px' }}>
               This record is currently Published and visible to all Hub users.
-              Editing will move this record to Review state and remove it from public view
-              until it is re-published.
-              <br /><br />
-              Are you sure you want to proceed?
             </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => { setShowWarningModal(false); setPendingEdit(false); }}
-                style={{
-                  padding: '10px 20px',
-                  border: '1px solid #D1D5DB',
-                  borderRadius: '6px',
-                  backgroundColor: '#FFFFFF',
-                  color: '#374151',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmEditPublished}
-                style={{
-                  padding: '10px 20px',
-                  border: 'none',
-                  borderRadius: '6px',
-                  backgroundColor: '#DC2626',
-                  color: '#FFFFFF',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                }}
-              >
-                Yes, Edit Record
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <p>
+              Editing will move this record to <strong>Review state</strong> and remove it from
+              public view until it is re-published.
+            </p>
+            <p style={{ marginTop: '8px' }}>Are you sure you want to proceed?</p>
+          </>
+        }
+        confirmLabel="Yes, Edit Record"
+        variant="danger"
+        onConfirm={() => {
+          setShowWarningModal(false);
+          setPendingEdit(false);
+          confirmEditPublished();
+        }}
+        onCancel={() => { setShowWarningModal(false); setPendingEdit(false); }}
+      />
     </div>
   );
 };
