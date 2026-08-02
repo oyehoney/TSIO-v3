@@ -3,19 +3,17 @@
  * TSIO Innovation Hub
  *
  * Grounded in: PRD §7 F4, JOURNEYS JRN-01.1, JRN-03.1, RTM TEST-F4-09
- * Fixed UUID: 11111111-1111-1111-1111-111111111001
+ * Fixed record UUID: 11111111-1111-1111-1111-111111111001
+ * Fixed curator UUID: 00000000-0000-0000-0000-000000000001
  * Idempotent: all INSERTs use ON CONFLICT DO NOTHING
  *
  * Usage (Knex):
  *   npx knex seed:run --specific=001_audio_security_poc.js
- *
- * Usage (raw psql via run_seeds.sh):
- *   This script is also referenced by run_seeds.sh via node execution.
  */
 
 'use strict';
 
-const SEED_USER_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+const SEED_USER_ID = '00000000-0000-0000-0000-000000000001';
 const ANCHOR_UUID  = '11111111-1111-1111-1111-111111111001';
 
 /**
@@ -24,7 +22,7 @@ const ANCHOR_UUID  = '11111111-1111-1111-1111-111111111001';
  */
 exports.seed = async function (knex) {
   // -------------------------------------------------------------------------
-  // Seed user: system curator for attribution
+  // Seed curator user — hardcoded UUID for stable fixture references
   // Real curators upsert via OIDC (AuthMiddleware, Wave 3a plan 06)
   // -------------------------------------------------------------------------
   await knex.raw(`
@@ -41,6 +39,10 @@ exports.seed = async function (knex) {
 
   // -------------------------------------------------------------------------
   // Main innovation record — Audio Security POC anchor record
+  // maturity_level = EXPERIMENT_POC  → triggers "POC ≠ production-ready" disclaimer
+  // publication_state = PUBLISHED    → triggers "Published ≠ approved for adoption" disclaimer
+  // source_type = I_AND_R            → does NOT trigger community disclaimer
+  // review_status = TECHNICALLY_REVIEWED → does NOT trigger reuse disclaimer
   // -------------------------------------------------------------------------
   await knex.raw(`
     INSERT INTO innovation_records (
@@ -110,7 +112,7 @@ exports.seed = async function (knex) {
 
       'Security review has NOT been completed for this effort. Known security considerations: (1) The encryption pipeline has not been evaluated by the AO cybersecurity team — required before any production deployment. (2) Audio signal data processed may constitute sensitive court proceeding content — data classification and retention policies must be established. Courts must conduct their own local security assessment.',
 
-      'CPU-only processing: average 340ms latency (unacceptable for real-time; target <50ms). GPU-accelerated (NVIDIA A10G): average 18ms latency (within target). Encryption throughput in controlled lab: 94.2% success rate at 0.3% failure rate. Performance degrades under high acoustic load in multi-channel courtroom environments.',
+      'CPU-only processing: average 340ms latency (unacceptable for real-time; target <50ms). GPU-accelerated (NVIDIA A10G): average 18ms latency (within target). Performance degrades under high acoustic load in multi-channel courtroom environments.',
 
       'EXECUTIVE',
 
@@ -127,8 +129,9 @@ exports.seed = async function (knex) {
   `);
 
   // -------------------------------------------------------------------------
-  // Key findings (5 findings covering GPU/CPU separation, Azure Gov constraints,
-  // performance, production-readiness gaps, and reuse potential)
+  // Key findings — 5 findings covering all required topics per spec
+  // (GPU/CPU separation, Azure Gov Cloud, performance/latency,
+  //  production-readiness gaps, reuse potential)
   // -------------------------------------------------------------------------
   await knex.raw(`
     INSERT INTO record_key_findings (finding_id, record_id, finding_text, display_order)
@@ -148,7 +151,7 @@ exports.seed = async function (knex) {
       (
         '11111111-1111-1111-1111-111111111103',
         '${ANCHOR_UUID}',
-        'Performance and throughput degrade under realistic courtroom conditions: GPU-accelerated success rate drops from 94.2% (controlled lab) to approximately 87% under multi-channel acoustic load, with latency variance increasing significantly. High-reverb courtroom environments require acoustic calibration before reliable operational use.',
+        'Performance and latency degrade under realistic courtroom conditions: GPU-accelerated success rate drops from 94.2% (controlled lab) to approximately 87% under multi-channel acoustic load, with latency variance increasing significantly. High-reverb courtroom environments require acoustic calibration before reliable operational use.',
         3
       ),
       (
@@ -160,14 +163,14 @@ exports.seed = async function (knex) {
       (
         '11111111-1111-1111-1111-111111111105',
         '${ANCHOR_UUID}',
-        'Reuse potential is MEDIUM: the GPU/CPU separation architecture and Azure Government Cloud constraint findings are broadly applicable to any court AV or real-time media processing initiative. The specific encryption approach requires GPU infrastructure investment but the constraint analysis and performance benchmarks can inform future procurement decisions without re-running the POC.',
+        'Reuse potential is MEDIUM: the GPU/CPU separation architecture and Azure Government Cloud constraint findings are broadly applicable to any court AV or real-time media processing initiative. The constraint analysis and performance benchmarks can inform future procurement decisions without re-running the POC.',
         5
       )
     ON CONFLICT (finding_id) DO NOTHING
   `);
 
   // -------------------------------------------------------------------------
-  // Artifact link — links to authoritative SharePoint document per F4 design
+  // Artifact link — 1 SharePoint DOCUMENT link per spec
   // -------------------------------------------------------------------------
   await knex.raw(`
     INSERT INTO record_artifact_links (link_id, record_id, label, url, artifact_type, display_order)
@@ -184,7 +187,7 @@ exports.seed = async function (knex) {
   `);
 
   // -------------------------------------------------------------------------
-  // Tags — MISSION_AREA + TECHNOLOGY_AREA (both required for catalog filtering)
+  // Tags — 4 tags: 2 MISSION_AREA + 2 TECHNOLOGY_AREA per spec
   // -------------------------------------------------------------------------
   await knex.raw(`
     INSERT INTO record_tags (tag_id, record_id, tag_type, tag_value, display_order)
@@ -221,7 +224,7 @@ exports.seed = async function (knex) {
   `);
 
   // -------------------------------------------------------------------------
-  // Engagement options — REQUEST_DEMO, REQUEST_TECHNICAL_GUIDANCE per user spec
+  // Engagement options — 2 options per spec (REQUEST_DEMO + REQUEST_TECHNICAL_GUIDANCE)
   // -------------------------------------------------------------------------
   await knex.raw(`
     INSERT INTO record_engagement_options (option_id, record_id, option_type, display_order)
