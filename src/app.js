@@ -39,6 +39,16 @@ function createApp(options = {}) {
     });
   }
 
+  // Map req.session.user → req.user so requireCurator/requireAdmin work consistently.
+  // In production, authenticateOidc does this mapping. In tests, session middleware
+  // sets req.session.user and this middleware propagates it to req.user.
+  app.use((req, _res, next) => {
+    if (req.session && req.session.user) {
+      req.user = req.session.user;
+    }
+    next();
+  });
+
   // Health check — returns 200 with DB ping
   app.get('/healthz', async (req, res) => {
     try {
@@ -56,6 +66,10 @@ function createApp(options = {}) {
   // Record routes (Wave 2c — Plan 05)
   const recordRouter = require('./handlers/recordHandler');
   app.use('/api/v1', recordRouter);
+
+  // Submission routes (Wave 3b — Plan 07)
+  const submissionsRouter = require('./routes/submissions');
+  app.use('/api/v1', submissionsRouter);
 
   // 404 handler
   app.use((req, res) => {
