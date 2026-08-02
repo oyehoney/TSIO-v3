@@ -7,8 +7,10 @@
  * Routes:
  *   GET /          → redirect to /catalog
  *   GET /catalog   → CatalogPage (EJS template with initial server-side data)
- *   GET /submit-opportunity → placeholder stub
- *   GET /share-innovation   → placeholder stub
+ *   GET /submit-opportunity                → OpportunitySubmission form (Wave 5a, Plan 12)
+ *   GET /submit-opportunity/confirmation   → Submission confirmation page (Wave 5a, Plan 12)
+ *   GET /share-innovation                  → ShareInnovation form (Wave 5a, Plan 12)
+ *   GET /share-innovation/confirmation     → Curation confirmation page (Wave 5a, Plan 12)
  *   GET /search             → placeholder stub
  *   GET /records/:id        → RecordPage (EJS template — Wave 4c, Plan 11)
  */
@@ -144,14 +146,24 @@ function webRouter(getPool) {
     }
   });
 
-  // GET /submit-opportunity — stub placeholder (Wave 5)
+  // GET /submit-opportunity — Opportunity Submission form (Wave 5a, Plan 12)
   router.get('/submit-opportunity', (req, res) => {
-    res.render('placeholder', { pageTitle: 'Submit a Mission Problem' });
+    res.render('submit-opportunity', { pageTitle: 'Submit a Mission Problem' });
   });
 
-  // GET /share-innovation — stub placeholder (Wave 5)
+  // GET /submit-opportunity/confirmation — Opportunity Submission confirmation page (Wave 5a, Plan 12)
+  router.get('/submit-opportunity/confirmation', (req, res) => {
+    res.render('submit-opportunity-confirmation', { pageTitle: 'Submission Received — Submit a Mission Problem' });
+  });
+
+  // GET /share-innovation — Share Innovation form (Wave 5a, Plan 12)
   router.get('/share-innovation', (req, res) => {
-    res.render('placeholder', { pageTitle: 'Share Your Innovation Work' });
+    res.render('share-innovation', { pageTitle: 'Share Your Innovation Work' });
+  });
+
+  // GET /share-innovation/confirmation — Share Innovation confirmation page (Wave 5a, Plan 12)
+  router.get('/share-innovation/confirmation', (req, res) => {
+    res.render('share-innovation-confirmation', { pageTitle: 'Submission Received — Share Your Innovation Work' });
   });
 
   // GET /search — SearchPage (Wave 4b, Plan 10)

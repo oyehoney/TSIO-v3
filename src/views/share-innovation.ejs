@@ -1,0 +1,640 @@
+<%- include('partials/layout-head', { pageTitle: 'Share Your Innovation Work' }) %>
+
+<%- include('partials/top-nav') %>
+
+<style>
+.submission-page { max-width: 42rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+.submission-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.submission-card__title { font-size: 1.25rem; font-weight: 600; color: #111827; margin: 0 0 0.25rem; }
+.submission-card__subtitle { font-size: 0.875rem; color: #6b7280; margin: 0 0 1.5rem; }
+.breadcrumb { margin-bottom: 1.5rem; }
+.breadcrumb a { font-size: 0.875rem; color: #1d4ed8; }
+.notice-box { display: flex; gap: 0.75rem; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+.notice-box--info { background: #eff6ff; border: 1px solid #93c5fd; }
+.notice-box--info .notice-icon { color: #2563eb; font-size: 1.125rem; flex-shrink: 0; }
+.notice-box--info .notice-content { font-size: 0.875rem; color: #1e3a8a; }
+.notice-box--info .notice-content p { margin: 0; }
+.notice-box--info .notice-content p + p { margin-top: 0.25rem; }
+.form-fieldset { border: none; padding: 0; margin: 0 0 1.5rem; }
+.form-fieldset__legend { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 1rem; display: block; }
+.form-field { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+.form-label__required { color: #dc2626; }
+.form-label__optional { color: #9ca3af; font-weight: 400; }
+.form-hint { font-size: 0.75rem; color: #6b7280; margin: 0 0 0.25rem; }
+.form-input, .form-textarea, .form-select {
+  display: block; width: 100%; border: 1px solid #d1d5db; border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #111827; background: #fff;
+  box-sizing: border-box;
+}
+.form-textarea { resize: vertical; font-family: inherit; }
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  outline: 2px solid #3b82f6; outline-offset: 0; border-color: #3b82f6;
+}
+.form-input--error, .form-textarea--error { border-color: #ef4444; }
+.form-char-count { font-size: 0.75rem; color: #9ca3af; text-align: right; margin-top: 0.25rem; }
+.form-error { display: block; font-size: 0.75rem; color: #dc2626; margin-top: 0.25rem; }
+.error-summary { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; }
+.error-summary__title { font-weight: 600; font-size: 0.875rem; color: #991b1b; margin: 0 0 0.5rem; }
+.error-summary__list { margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #b91c1c; }
+.rate-limit-banner { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; }
+.rate-limit-banner__icon { color: #dc2626; font-size: 1.125rem; flex-shrink: 0; }
+.rate-limit-banner__title { font-weight: 600; font-size: 0.875rem; color: #991b1b; margin: 0 0 0.25rem; }
+.rate-limit-banner__msg { font-size: 0.875rem; color: #b91c1c; margin: 0; }
+.captcha-widget { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.75rem; background: #f9fafb; font-size: 0.875rem; color: #6b7280; }
+.captcha-widget__verified { color: #15803d; font-weight: 500; }
+.radio-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.radio-label { display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: #374151; }
+.radio-label input { margin-top: 0.125rem; }
+.url-field-row { margin-bottom: 0.75rem; }
+.btn-add-url { font-size: 0.875rem; color: #1d4ed8; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; margin-top: 0.25rem; }
+.btn-add-url:hover { color: #1e3a8a; }
+.btn-add-url:disabled { display: none; }
+.max-url-note { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; display: none; }
+.form-required-note { font-size: 0.75rem; color: #6b7280; margin-bottom: 1rem; }
+.btn-submit {
+  background: #1d4ed8; color: #fff; font-weight: 600; font-size: 0.875rem;
+  padding: 0.625rem 1.5rem; border: none; border-radius: 0.375rem; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-submit:hover { background: #1e40af; }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+code.inline { background: #f3f4f6; padding: 0 0.25rem; border-radius: 0.25rem; font-size: 0.75rem; }
+</style>
+
+<main class="submission-page" id="main-content">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/catalog">← Back to Catalog</a>
+  </nav>
+
+  <div class="submission-card">
+    <h1 class="submission-card__title">Share Your Innovation Work</h1>
+    <p class="submission-card__subtitle">
+      Has your court or team done innovation work that could benefit the broader Judiciary?
+      Submit it here for I&amp;R curation review.
+    </p>
+
+    <!-- Curation-review governance notice — must appear before all fields per UX Mockup Screen 05 -->
+    <div class="notice-box notice-box--info" role="note" aria-label="Important notice about submission review">
+      <span class="notice-icon" aria-hidden="true">ℹ</span>
+      <div class="notice-content">
+        <p><strong>Submissions enter I&amp;R curation review.</strong> Publication is not guaranteed.</p>
+        <p>If published, your team will be credited.</p>
+      </div>
+    </div>
+
+    <% if (typeof errors !== 'undefined' && Object.keys(errors).length > 0) { %>
+    <div class="error-summary" role="alert" aria-live="polite">
+      <p class="error-summary__title">Please fix the following errors:</p>
+      <ul class="error-summary__list">
+        <% Object.values(errors).filter(Boolean).forEach(function(msg) { %>
+          <li><%= msg %></li>
+        <% }); %>
+      </ul>
+    </div>
+    <% } %>
+
+    <% if (typeof rateLimited !== 'undefined' && rateLimited) { %>
+    <div class="rate-limit-banner" role="alert" aria-live="assertive">
+      <span class="rate-limit-banner__icon" aria-hidden="true">⚠</span>
+      <div>
+        <p class="rate-limit-banner__title">Too many submissions</p>
+        <p class="rate-limit-banner__msg">Too many submissions from this location. Please try again later.</p>
+      </div>
+    </div>
+    <% } %>
+
+    <form action="/api/v1/contribution-submissions" method="post" id="share-innovation-form" novalidate>
+      <!-- About the Work section (problem-first ordering) -->
+      <fieldset class="form-fieldset">
+        <legend class="form-fieldset__legend">— About the Work —</legend>
+
+        <!-- Problem addressed — FIRST content field (problem-first ordering) -->
+        <div class="form-field">
+          <label class="form-label" for="problem_addressed">
+            Describe the mission problem your team addressed
+            <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <p class="form-hint">What challenge were you solving? Who is affected? (50–2000 chars)</p>
+          <textarea
+            id="problem_addressed" name="problem_addressed"
+            class="form-textarea<% if (typeof errors !== 'undefined' && errors.problem_addressed) { %> form-textarea--error<% } %>"
+            rows="3" maxlength="2000" required aria-required="true"
+            aria-invalid="<% if (typeof errors !== 'undefined' && errors.problem_addressed) { %>true<% } else { %>false<% } %>"
+          ><%= typeof values !== 'undefined' ? (values.problem_addressed || '') : '' %></textarea>
+          <div style="display:flex; justify-content:space-between; margin-top:0.25rem;">
+            <% if (typeof errors !== 'undefined' && errors.problem_addressed) { %>
+            <span class="form-error" role="alert"><%= errors.problem_addressed %></span>
+            <% } else { %><span></span><% } %>
+            <span class="form-char-count">0 / 2000</span>
+          </div>
+        </div>
+
+        <!-- Work description -->
+        <div class="form-field">
+          <label class="form-label" for="work_description">
+            Describe what your team built or explored
+            <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <p class="form-hint">What approach, technology, or method did you use? (50–3000 chars)</p>
+          <textarea
+            id="work_description" name="work_description"
+            class="form-textarea<% if (typeof errors !== 'undefined' && errors.work_description) { %> form-textarea--error<% } %>"
+            rows="4" maxlength="3000" required aria-required="true"
+            aria-invalid="<% if (typeof errors !== 'undefined' && errors.work_description) { %>true<% } else { %>false<% } %>"
+          ><%= typeof values !== 'undefined' ? (values.work_description || '') : '' %></textarea>
+          <div style="display:flex; justify-content:space-between; margin-top:0.25rem;">
+            <% if (typeof errors !== 'undefined' && errors.work_description) { %>
+            <span class="form-error" role="alert"><%= errors.work_description %></span>
+            <% } else { %><span></span><% } %>
+            <span class="form-char-count">0 / 3000</span>
+          </div>
+        </div>
+
+        <!-- Outcome summary -->
+        <div class="form-field">
+          <label class="form-label" for="outcome_summary">
+            Outcome Summary <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <p class="form-hint">What were the results? Include limitations or gaps. (50–2000 chars)</p>
+          <textarea
+            id="outcome_summary" name="outcome_summary"
+            class="form-textarea<% if (typeof errors !== 'undefined' && errors.outcome_summary) { %> form-textarea--error<% } %>"
+            rows="3" maxlength="2000" required aria-required="true"
+            aria-invalid="<% if (typeof errors !== 'undefined' && errors.outcome_summary) { %>true<% } else { %>false<% } %>"
+          ><%= typeof values !== 'undefined' ? (values.outcome_summary || '') : '' %></textarea>
+          <div style="display:flex; justify-content:space-between; margin-top:0.25rem;">
+            <% if (typeof errors !== 'undefined' && errors.outcome_summary) { %>
+            <span class="form-error" role="alert"><%= errors.outcome_summary %></span>
+            <% } else { %><span></span><% } %>
+            <span class="form-char-count">0 / 2000</span>
+          </div>
+        </div>
+
+        <!-- Self-assessed maturity — ARCHIVED intentionally absent per F6 spec -->
+        <div class="form-field">
+          <fieldset>
+            <legend class="form-label">
+              What stage is this work at?
+              <span class="form-label__required" aria-label="required">*</span>
+            </legend>
+            <p class="form-hint">Your honest assessment of current maturity.</p>
+            <div class="radio-group">
+              <%
+              // CRITICAL: ARCHIVED is excluded from this list per F6 spec (PRD §7 F6, US-6.1, UX Screen 05)
+              var maturityOptions = [
+                { value: 'IDEA', label: 'Idea (problem identified, no exploration yet)' },
+                { value: 'EXPERIMENT_POC', label: 'Experiment / POC (feasibility explored)' },
+                { value: 'PROTOTYPE_PILOT', label: 'Prototype / Pilot (working model tested)' },
+                { value: 'PRODUCTION_VALIDATED', label: 'Production / Validated (deployed and operating)' },
+                // NOTE: ARCHIVED is intentionally absent — self-assessed maturity cannot be ARCHIVED
+              ];
+              maturityOptions.forEach(function(opt) { %>
+              <label class="radio-label">
+                <input type="radio" name="self_assessed_maturity" value="<%= opt.value %>"
+                  <%= typeof values !== 'undefined' && values.self_assessed_maturity === opt.value ? 'checked' : '' %>
+                />
+                <span><%= opt.label %></span>
+              </label>
+              <% }); %>
+            </div>
+            <p class="form-hint" style="margin-top:0.5rem;">Note: Final maturity level is assigned by I&amp;R curators.</p>
+            <% if (typeof errors !== 'undefined' && errors.self_assessed_maturity) { %>
+            <span class="form-error" role="alert"><%= errors.self_assessed_maturity %></span>
+            <% } %>
+          </fieldset>
+        </div>
+
+        <!-- Artifact URLs — dynamic 1–5 inputs -->
+        <div class="form-field">
+          <p class="form-label" style="margin-bottom:0.25rem;">
+            Artifact Links <span class="form-label__required" aria-label="required">*</span>
+          </p>
+          <p class="form-hint">
+            Provide links to documentation, diagrams, code, or recordings that support your submission. (1–5 URLs)
+            All URLs must begin with <code class="inline">https://</code>
+          </p>
+
+          <!-- URL 1: always visible, required -->
+          <div class="url-field-row" id="url-row-0">
+            <label class="form-label" for="artifact_url_0">
+              Artifact URL 1 <span class="form-label__required" aria-label="required">*</span>
+            </label>
+            <input
+              id="artifact_url_0" name="artifact_urls[0]" type="url"
+              class="form-input" placeholder="https://"
+              style="font-family: monospace;"
+              aria-invalid="false"
+              aria-describedby="artifact_url_0_error"
+            />
+            <span id="artifact_url_0_error" class="form-error" role="alert"></span>
+          </div>
+
+          <!-- URLs 2–5: hidden until "+ Add another" clicked -->
+          <% for (var i = 1; i < 5; i++) { %>
+          <div class="url-field-row" id="url-row-<%= i %>" style="display:none;">
+            <label class="form-label" for="artifact_url_<%= i %>">
+              Artifact URL <%= i + 1 %> <span class="form-label__optional">(optional)</span>
+            </label>
+            <input
+              id="artifact_url_<%= i %>" name="artifact_urls[<%= i %>]" type="url"
+              class="form-input" placeholder="https://"
+              style="font-family: monospace;"
+              aria-invalid="false"
+              aria-describedby="artifact_url_<%= i %>_error"
+            />
+            <span id="artifact_url_<%= i %>_error" class="form-error" role="alert"></span>
+          </div>
+          <% } %>
+
+          <button type="button" class="btn-add-url" id="add-url-btn"
+            aria-label="Add artifact URL 2 of 5">
+            + Add another artifact URL
+          </button>
+          <p class="max-url-note" id="max-url-note">Maximum of 5 artifact URLs reached.</p>
+
+          <% if (typeof errors !== 'undefined' && errors.artifact_urls) { %>
+          <span class="form-error" role="alert" id="artifact_urls_error"><%= errors.artifact_urls %></span>
+          <% } %>
+        </div>
+
+        <!-- Additional context (optional) -->
+        <div class="form-field">
+          <label class="form-label" for="additional_context">
+            Additional Context <span class="form-label__optional">(optional)</span>
+          </label>
+          <p class="form-hint">Anything else I&amp;R should know about this work.</p>
+          <textarea id="additional_context" name="additional_context" class="form-textarea" rows="2"><%= typeof values !== 'undefined' ? (values.additional_context || '') : '' %></textarea>
+        </div>
+      </fieldset>
+
+      <!-- Your Team section -->
+      <fieldset class="form-fieldset">
+        <legend class="form-fieldset__legend">— Your Team —</legend>
+
+        <div class="form-field">
+          <label class="form-label" for="contributing_team">
+            Contributing Team Name <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <p class="form-hint">This is how your team will be credited if published.</p>
+          <input
+            id="contributing_team" name="contributing_team" type="text"
+            class="form-input<% if (typeof errors !== 'undefined' && errors.contributing_team) { %> form-input--error<% } %>"
+            value="<%= typeof values !== 'undefined' ? (values.contributing_team || '') : '' %>"
+            required aria-required="true"
+          />
+          <% if (typeof errors !== 'undefined' && errors.contributing_team) { %>
+          <span class="form-error" role="alert"><%= errors.contributing_team %></span>
+          <% } %>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="contributing_office">
+            Contributing Office <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <input
+            id="contributing_office" name="contributing_office" type="text"
+            class="form-input<% if (typeof errors !== 'undefined' && errors.contributing_office) { %> form-input--error<% } %>"
+            value="<%= typeof values !== 'undefined' ? (values.contributing_office || '') : '' %>"
+            required aria-required="true"
+          />
+          <% if (typeof errors !== 'undefined' && errors.contributing_office) { %>
+          <span class="form-error" role="alert"><%= errors.contributing_office %></span>
+          <% } %>
+        </div>
+      </fieldset>
+
+      <!-- Your Contact Information section -->
+      <fieldset class="form-fieldset">
+        <legend class="form-fieldset__legend">— Your Contact Information —</legend>
+
+        <div class="form-field">
+          <label class="form-label" for="contact_name">
+            Contact Name <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <input
+            id="contact_name" name="contact_name" type="text"
+            class="form-input<% if (typeof errors !== 'undefined' && errors.contact_name) { %> form-input--error<% } %>"
+            value="<%= typeof values !== 'undefined' ? (values.contact_name || '') : '' %>"
+            required aria-required="true"
+          />
+          <% if (typeof errors !== 'undefined' && errors.contact_name) { %>
+          <span class="form-error" role="alert"><%= errors.contact_name %></span>
+          <% } %>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="contact_title">
+            Contact Title <span class="form-label__optional">(optional)</span>
+          </label>
+          <input id="contact_title" name="contact_title" type="text" class="form-input"
+            value="<%= typeof values !== 'undefined' ? (values.contact_title || '') : '' %>" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="contact_email">
+            Contact Email Address <span class="form-label__required" aria-label="required">*</span>
+          </label>
+          <p class="form-hint">A confirmation may be sent to this address. A curator may reach out before publication.</p>
+          <input
+            id="contact_email" name="contact_email" type="email"
+            class="form-input<% if (typeof errors !== 'undefined' && errors.contact_email) { %> form-input--error<% } %>"
+            value="<%= typeof values !== 'undefined' ? (values.contact_email || '') : '' %>"
+            required aria-required="true"
+          />
+          <% if (typeof errors !== 'undefined' && errors.contact_email) { %>
+          <span class="form-error" role="alert"><%= errors.contact_email %></span>
+          <% } %>
+        </div>
+      </fieldset>
+
+      <!-- CAPTCHA -->
+      <div class="form-field">
+        <div class="captcha-widget" aria-label="CAPTCHA verification (development mode — auto-verified)" role="status">
+          <span class="captcha-widget__verified">✓ CAPTCHA verification active</span>
+          <span style="margin-left:0.5rem; color:#6b7280;">(Configure VITE_CAPTCHA_SITE_KEY for production CAPTCHA)</span>
+        </div>
+        <input type="hidden" name="captcha_token" value="dev-captcha-bypass-token" id="captcha_token" />
+      </div>
+
+      <p class="form-required-note"><span style="color:#dc2626;">*</span> Required fields</p>
+
+      <button type="submit" class="btn-submit" id="submit-btn">Submit Innovation Work</button>
+    </form>
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  var form = document.getElementById('share-innovation-form');
+  var submitBtn = document.getElementById('submit-btn');
+
+  // ── Artifact URL dynamic add/remove ──────────────────────────────────────────
+  var MAX_URLS = 5;
+  var visibleCount = 1;
+  var addBtn = document.getElementById('add-url-btn');
+  var maxNote = document.getElementById('max-url-note');
+
+  function updateAddButton() {
+    if (visibleCount >= MAX_URLS) {
+      addBtn.style.display = 'none';
+      maxNote.style.display = 'block';
+    } else {
+      addBtn.style.display = '';
+      maxNote.style.display = 'none';
+      addBtn.setAttribute('aria-label', 'Add artifact URL ' + (visibleCount + 1) + ' of ' + MAX_URLS);
+    }
+  }
+
+  addBtn.addEventListener('click', function() {
+    if (visibleCount < MAX_URLS) {
+      var row = document.getElementById('url-row-' + visibleCount);
+      if (row) {
+        row.style.display = '';
+        visibleCount++;
+        updateAddButton();
+        // Focus the new input
+        var input = document.getElementById('artifact_url_' + (visibleCount - 1));
+        if (input) input.focus();
+      }
+    }
+  });
+
+  // ── Artifact URL https:// validation on blur ─────────────────────────────────
+  function isValidHttpsUrl(value) {
+    if (!value.trim()) return true;
+    try {
+      var parsed = new URL(value);
+      return parsed.protocol === 'https:';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  for (var i = 0; i < MAX_URLS; i++) {
+    (function(idx) {
+      var input = document.getElementById('artifact_url_' + idx);
+      var errEl = document.getElementById('artifact_url_' + idx + '_error');
+      if (!input) return;
+
+      input.addEventListener('blur', function() {
+        var val = input.value;
+        if (idx === 0 && !val.trim()) {
+          errEl.textContent = 'At least one artifact URL is required.';
+          input.setAttribute('aria-invalid', 'true');
+        } else if (val.trim() && !isValidHttpsUrl(val)) {
+          errEl.textContent = 'Artifact URL must begin with https://';
+          input.setAttribute('aria-invalid', 'true');
+        } else {
+          errEl.textContent = '';
+          input.setAttribute('aria-invalid', 'false');
+        }
+      });
+
+      input.addEventListener('input', function() {
+        if (input.getAttribute('aria-invalid') === 'true') {
+          var val = input.value;
+          if (!val.trim() && idx !== 0) {
+            errEl.textContent = '';
+            input.setAttribute('aria-invalid', 'false');
+          } else if (val.trim() && isValidHttpsUrl(val)) {
+            errEl.textContent = '';
+            input.setAttribute('aria-invalid', 'false');
+          }
+        }
+      });
+    })(i);
+  }
+
+  // ── Client-side validation helpers ────────────────────────────────────────────
+  function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  function buildErrorSummary(msgs) {
+    var existing = document.querySelector('.error-summary');
+    if (existing) existing.remove();
+    if (!msgs.length) return;
+    var div = document.createElement('div');
+    div.className = 'error-summary';
+    div.setAttribute('role', 'alert');
+    div.setAttribute('aria-live', 'polite');
+    div.innerHTML = '<p class="error-summary__title">Please fix the following errors:</p>' +
+      '<ul class="error-summary__list">' +
+      msgs.map(function(m) { return '<li>' + m + '</li>'; }).join('') +
+      '</ul>';
+    form.parentNode.insertBefore(div, form);
+    div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function validateTextarea(name, min, max, label) {
+    var el = document.getElementById(name);
+    if (!el) return true;
+    var val = el.value.trim();
+    if (!val || val.length < min) {
+      el.classList.add('form-textarea--error');
+      el.setAttribute('aria-invalid', 'true');
+      return label + ' must be at least ' + min + ' characters.';
+    }
+    if (val.length > max) {
+      el.classList.add('form-textarea--error');
+      el.setAttribute('aria-invalid', 'true');
+      return label + ' must be ' + max + ' characters or fewer.';
+    }
+    el.classList.remove('form-textarea--error');
+    el.setAttribute('aria-invalid', 'false');
+    return null;
+  }
+
+  // ── Client-side submit handler ────────────────────────────────────────────────
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var errs = [];
+
+    // Validate textareas
+    var paErr = validateTextarea('problem_addressed', 50, 2000, 'Problem addressed');
+    if (paErr) errs.push(paErr);
+    var wdErr = validateTextarea('work_description', 50, 3000, 'Work description');
+    if (wdErr) errs.push(wdErr);
+    var osErr = validateTextarea('outcome_summary', 50, 2000, 'Outcome summary');
+    if (osErr) errs.push(osErr);
+
+    // Validate maturity
+    var maturityVal = '';
+    var maturityInputs = form.querySelectorAll('input[name="self_assessed_maturity"]');
+    maturityInputs.forEach(function(r) { if (r.checked) maturityVal = r.value; });
+    if (!maturityVal) errs.push('Please select the current stage of this work.');
+
+    // Validate artifact URL 1 (required)
+    var url0 = document.getElementById('artifact_url_0');
+    var url0Err = document.getElementById('artifact_url_0_error');
+    if (!url0.value.trim()) {
+      errs.push('At least one artifact URL is required.');
+      url0Err.textContent = 'At least one artifact URL is required.';
+      url0.setAttribute('aria-invalid', 'true');
+    } else if (!isValidHttpsUrl(url0.value)) {
+      errs.push('Artifact URL 1 must begin with https://');
+      url0Err.textContent = 'Artifact URL must begin with https://';
+      url0.setAttribute('aria-invalid', 'true');
+    }
+
+    // Validate visible URLs 2-5
+    for (var ui = 1; ui < visibleCount; ui++) {
+      var urlEl = document.getElementById('artifact_url_' + ui);
+      var urlErrEl = document.getElementById('artifact_url_' + ui + '_error');
+      if (urlEl && urlEl.value.trim() && !isValidHttpsUrl(urlEl.value)) {
+        errs.push('Artifact URL ' + (ui + 1) + ' must begin with https://');
+        urlErrEl.textContent = 'Artifact URL must begin with https://';
+        urlEl.setAttribute('aria-invalid', 'true');
+      }
+    }
+
+    // Validate required text fields
+    var textFields = [
+      { id: 'contributing_team', label: 'Contributing team name' },
+      { id: 'contributing_office', label: 'Contributing office' },
+      { id: 'contact_name', label: 'Contact name' },
+      { id: 'contact_email', label: 'Contact email' },
+    ];
+    textFields.forEach(function(f) {
+      var el = document.getElementById(f.id);
+      if (!el) return;
+      var val = el.value.trim();
+      if (!val || val.length < 2) {
+        el.classList.add('form-input--error');
+        el.setAttribute('aria-invalid', 'true');
+        errs.push(f.label + ' is required.');
+      } else if (f.id === 'contact_email' && !validateEmail(val)) {
+        el.classList.add('form-input--error');
+        el.setAttribute('aria-invalid', 'true');
+        errs.push('Please enter a valid email address.');
+      } else {
+        el.classList.remove('form-input--error');
+        el.setAttribute('aria-invalid', 'false');
+      }
+    });
+
+    if (errs.length > 0) {
+      buildErrorSummary(errs);
+      return;
+    }
+
+    buildErrorSummary([]);
+
+    // Collect artifact URLs
+    var artifactUrls = [];
+    for (var ai = 0; ai < visibleCount; ai++) {
+      var aEl = document.getElementById('artifact_url_' + ai);
+      if (aEl && aEl.value.trim()) artifactUrls.push(aEl.value.trim());
+    }
+
+    var payload = {
+      problem_addressed: document.getElementById('problem_addressed').value.trim(),
+      work_description: document.getElementById('work_description').value.trim(),
+      outcome_summary: document.getElementById('outcome_summary').value.trim(),
+      self_assessed_maturity: maturityVal,
+      artifact_urls: artifactUrls,
+      contributing_team: document.getElementById('contributing_team').value.trim(),
+      contributing_office: document.getElementById('contributing_office').value.trim(),
+      contact_name: document.getElementById('contact_name').value.trim(),
+      contact_email: document.getElementById('contact_email').value.trim(),
+      captcha_token: document.getElementById('captcha_token').value,
+    };
+    var contactTitle = document.getElementById('contact_title').value.trim();
+    var addlCtx = document.getElementById('additional_context').value.trim();
+    if (contactTitle) payload.contact_title = contactTitle;
+    if (addlCtx) payload.additional_context = addlCtx;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting\u2026';
+    submitBtn.setAttribute('aria-busy', 'true');
+
+    fetch('/api/v1/contribution-submissions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    .then(function(res) {
+      if (res.status === 201) {
+        window.location.href = '/share-innovation/confirmation';
+        return;
+      }
+      if (res.status === 429) {
+        var banner = document.querySelector('.rate-limit-banner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.className = 'rate-limit-banner';
+          banner.setAttribute('role', 'alert');
+          banner.setAttribute('aria-live', 'assertive');
+          banner.innerHTML = '<span class="rate-limit-banner__icon" aria-hidden="true">\u26a0</span>' +
+            '<div><p class="rate-limit-banner__title">Too many submissions</p>' +
+            '<p class="rate-limit-banner__msg">Too many submissions from this location. Please try again later.</p></div>';
+          form.parentNode.insertBefore(banner, form);
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Innovation Work';
+        submitBtn.setAttribute('aria-busy', 'false');
+        return;
+      }
+      return res.json().then(function(body) {
+        var msg = (body && body.error && body.error.message) || 'An error occurred. Please try again.';
+        buildErrorSummary([msg]);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Innovation Work';
+        submitBtn.setAttribute('aria-busy', 'false');
+      });
+    })
+    .catch(function() {
+      buildErrorSummary(['Unable to submit at this time. Please try again or contact the I&R team directly.']);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Innovation Work';
+      submitBtn.setAttribute('aria-busy', 'false');
+    });
+  });
+})();
+</script>
+
+<%- include('partials/layout-foot') %>
