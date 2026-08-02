@@ -1,0 +1,351 @@
+<%- include('partials/layout-head', { pageTitle: 'Innovation Catalog' }) %>
+
+<%- include('partials/top-nav') %>
+
+<main class="catalog-page" id="main-content">
+  <div class="catalog-layout">
+
+    <!-- ── Filter sidebar ── -->
+    <aside class="filter-panel" aria-label="Filter catalog records" data-testid="filter-panel">
+
+      <h2 class="filter-panel__heading">Filters</h2>
+
+      <!-- Maturity Level -->
+      <fieldset class="filter-group" data-filter-group="maturity_level">
+        <legend class="filter-group__label">Maturity Level</legend>
+        <div class="filter-group__options">
+          <% const maturityOptions = [
+            ['IDEA', 'Idea'],
+            ['EXPERIMENT_POC', 'Experiment / POC'],
+            ['PROTOTYPE_PILOT', 'Prototype / Pilot'],
+            ['PRODUCTION_VALIDATED', 'Production / Validated Pattern'],
+            ['ARCHIVED', 'Archived'],
+          ]; %>
+          <% maturityOptions.forEach(function([value, label]) { %>
+            <label class="filter-option">
+              <input
+                type="checkbox"
+                name="maturity_level"
+                value="<%= value %>"
+                class="filter-checkbox"
+                data-filter="maturity_level"
+                data-testid="filter-maturity-<%= value %>"
+                <%= (activeFilters.maturity_level || []).includes(value) ? 'checked' : '' %>
+              />
+              <span><%= label %></span>
+            </label>
+          <% }); %>
+        </div>
+      </fieldset>
+
+      <!-- Review Status -->
+      <fieldset class="filter-group" data-filter-group="review_status">
+        <legend class="filter-group__label">Review Status</legend>
+        <div class="filter-group__options">
+          <% const reviewOptions = [
+            ['SUBMITTED', 'Submitted'],
+            ['CURATED', 'Curated'],
+            ['TECHNICALLY_REVIEWED', 'Technically Reviewed'],
+            ['SECURITY_REVIEWED', 'Security Reviewed'],
+            ['POLICY_REVIEWED', 'Policy Reviewed'],
+            ['VALIDATED_FOR_REUSE', 'Validated for Reuse'],
+            ['SUPERSEDED_RETIRED', 'Superseded / Retired'],
+          ]; %>
+          <% reviewOptions.forEach(function([value, label]) { %>
+            <label class="filter-option">
+              <input
+                type="checkbox"
+                name="review_status"
+                value="<%= value %>"
+                class="filter-checkbox"
+                data-filter="review_status"
+                data-testid="filter-review-<%= value %>"
+                <%= (activeFilters.review_status || []).includes(value) ? 'checked' : '' %>
+              />
+              <span><%= label %></span>
+            </label>
+          <% }); %>
+        </div>
+      </fieldset>
+
+      <!-- Mission Area -->
+      <% if (filterOptions && filterOptions.mission_area_tags && filterOptions.mission_area_tags.length > 0) { %>
+        <fieldset class="filter-group" data-filter-group="mission_area">
+          <legend class="filter-group__label">Mission Area</legend>
+          <div class="filter-group__options">
+            <% filterOptions.mission_area_tags.forEach(function(tag) { %>
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  name="mission_area"
+                  value="<%= tag %>"
+                  class="filter-checkbox"
+                  data-filter="mission_area"
+                  data-testid="filter-mission-<%= tag %>"
+                  <%= (activeFilters.mission_area || []).includes(tag) ? 'checked' : '' %>
+                />
+                <span><%= tag %></span>
+              </label>
+            <% }); %>
+          </div>
+        </fieldset>
+      <% } %>
+
+      <!-- Technology Area -->
+      <% if (filterOptions && filterOptions.technology_area_tags && filterOptions.technology_area_tags.length > 0) { %>
+        <fieldset class="filter-group" data-filter-group="technology_area">
+          <legend class="filter-group__label">Technology Area</legend>
+          <div class="filter-group__options">
+            <% filterOptions.technology_area_tags.forEach(function(tag) { %>
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  name="technology_area"
+                  value="<%= tag %>"
+                  class="filter-checkbox"
+                  data-filter="technology_area"
+                  data-testid="filter-technology-<%= tag %>"
+                  <%= (activeFilters.technology_area || []).includes(tag) ? 'checked' : '' %>
+                />
+                <span><%= tag %></span>
+              </label>
+            <% }); %>
+          </div>
+        </fieldset>
+      <% } %>
+
+      <!-- Contributing Office -->
+      <% if (filterOptions && filterOptions.contributing_offices && filterOptions.contributing_offices.length > 0) { %>
+        <fieldset class="filter-group" data-filter-group="contributing_office">
+          <legend class="filter-group__label">Contributing Office</legend>
+          <div class="filter-group__options">
+            <% filterOptions.contributing_offices.forEach(function(office) { %>
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  name="contributing_office"
+                  value="<%= office %>"
+                  class="filter-checkbox"
+                  data-filter="contributing_office"
+                  data-testid="filter-office-<%= office %>"
+                  <%= (activeFilters.contributing_office || []).includes(office) ? 'checked' : '' %>
+                />
+                <span><%= office %></span>
+              </label>
+            <% }); %>
+          </div>
+        </fieldset>
+      <% } %>
+
+      <!-- Reuse Potential -->
+      <fieldset class="filter-group" data-filter-group="reuse_potential">
+        <legend class="filter-group__label">Reuse Potential</legend>
+        <div class="filter-group__options">
+          <% [['', 'Any'], ['HIGH', 'High'], ['MEDIUM', 'Medium'], ['LOW', 'Low']].forEach(function([value, label]) { %>
+            <label class="filter-option">
+              <input
+                type="radio"
+                name="reuse_potential"
+                value="<%= value %>"
+                class="filter-radio"
+                data-filter="reuse_potential"
+                data-testid="filter-reuse-<%= value || 'any' %>"
+                <%= activeFilters.reuse_potential === value ? 'checked' : (value === '' && !activeFilters.reuse_potential ? 'checked' : '') %>
+              />
+              <span><%= label %></span>
+            </label>
+          <% }); %>
+        </div>
+      </fieldset>
+
+      <!-- Clear All Filters -->
+      <button
+        type="button"
+        class="btn-clear-filters"
+        id="clear-all-filters"
+        data-testid="clear-all-filters"
+      >
+        Clear All Filters
+      </button>
+
+    </aside>
+
+    <!-- ── Main catalog content ── -->
+    <div class="catalog-main">
+
+      <!-- Title + sort row -->
+      <div class="catalog-header">
+        <h1 class="catalog-title">Innovation Catalog</h1>
+        <div class="sort-controls">
+          <label for="sort-select" class="sort-controls__label">Sort:</label>
+          <select
+            id="sort-select"
+            class="sort-controls__select"
+            data-testid="sort-select"
+            aria-label="Sort catalog records"
+          >
+            <option value="recent" <%= activeFilters.sort === 'recent' || !activeFilters.sort ? 'selected' : '' %>>Most Recent</option>
+            <option value="maturity" <%= activeFilters.sort === 'maturity' ? 'selected' : '' %>>Maturity</option>
+            <option value="relevance" <%= activeFilters.sort === 'relevance' ? 'selected' : '' %>>Relevance</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Active filter bar: result count + active chips -->
+      <div class="active-filter-bar" data-testid="active-filter-bar" id="active-filter-bar">
+        <!-- Rendered by JS from URL state; server-side fallback rendered here -->
+        <span
+          class="result-count"
+          aria-live="polite"
+          aria-atomic="true"
+          id="result-count"
+          data-testid="result-count"
+        >
+          Showing <%= pagination.total_count %> record<%= pagination.total_count !== 1 ? 's' : '' %>
+          <% if (hasActiveFilters) { %>(filters applied)<% } %>
+        </span>
+        <% if (hasActiveFilters) { %>
+          <span class="active-filters-label" aria-hidden="true">Active filters:</span>
+          <div class="filter-chips" id="filter-chips">
+            <% (activeFilters.maturity_level || []).forEach(function(level) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="maturity_level" data-value="<%= level %>">
+                <%= maturityLabels[level] || level %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: <%= maturityLabels[level] || level %>">×</button>
+              </span>
+            <% }); %>
+            <% (activeFilters.review_status || []).forEach(function(status) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="review_status" data-value="<%= status %>">
+                <%= reviewStatusLabels[status] || status %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: <%= reviewStatusLabels[status] || status %>">×</button>
+              </span>
+            <% }); %>
+            <% (activeFilters.contributing_office || []).forEach(function(office) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="contributing_office" data-value="<%= office %>">
+                <%= office %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: <%= office %>">×</button>
+              </span>
+            <% }); %>
+            <% (activeFilters.mission_area || []).forEach(function(tag) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="mission_area" data-value="<%= tag %>">
+                <%= tag %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: <%= tag %>">×</button>
+              </span>
+            <% }); %>
+            <% (activeFilters.technology_area || []).forEach(function(tag) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="technology_area" data-value="<%= tag %>">
+                <%= tag %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: <%= tag %>">×</button>
+              </span>
+            <% }); %>
+            <% if (activeFilters.reuse_potential) { %>
+              <span class="filter-chip" data-testid="filter-chip" data-filter="reuse_potential" data-value="<%= activeFilters.reuse_potential %>">
+                Reuse: <%= activeFilters.reuse_potential.charAt(0) + activeFilters.reuse_potential.slice(1).toLowerCase() %>
+                <button type="button" class="filter-chip__remove" aria-label="Remove filter: Reuse <%= activeFilters.reuse_potential.toLowerCase() %>">×</button>
+              </span>
+            <% } %>
+            <button type="button" class="btn-clear-filters-bar" data-testid="clear-all-filters-bar">
+              Clear all filters
+            </button>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Catalog card grid — replaced by AJAX -->
+      <div id="catalog-grid-container">
+        <!-- Loading state (hidden by default, shown by JS during fetch) -->
+        <div class="catalog-loading" id="catalog-loading" aria-label="Loading catalog…" aria-busy="true" data-testid="catalog-loading" hidden>
+          <div class="skeleton-grid">
+            <% for (let i = 0; i < 4; i++) { %>
+              <div class="skeleton-card"></div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Error state -->
+        <div class="catalog-error" id="catalog-error" role="alert" data-testid="catalog-error" hidden>
+          The catalog is temporarily unavailable. Please try again shortly.
+        </div>
+
+        <!-- Catalog grid -->
+        <% if (cards && cards.length > 0) { %>
+          <div class="catalog-grid" data-testid="catalog-grid" id="catalog-grid">
+            <% cards.forEach(function(card) { %>
+              <%- include('partials/catalog-card', { card }) %>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <!-- Empty state -->
+          <div class="catalog-empty-state" data-testid="catalog-empty-state" role="status" id="catalog-empty-state">
+            <span class="catalog-empty-state__icon" aria-hidden="true">📭</span>
+            <h2 class="catalog-empty-state__title">No records found</h2>
+            <% if (hasActiveFilters) { %>
+              <p class="catalog-empty-state__message">No records match your current filters.</p>
+              <ul class="catalog-empty-state__suggestions">
+                <li>Clearing one or more filters</li>
+                <li>Searching with a keyword</li>
+              </ul>
+            <% } else { %>
+              <p class="catalog-empty-state__message">No published innovation records are available yet.</p>
+            <% } %>
+            <p class="catalog-empty-state__cta-text">Can't find work on a problem your court is facing?</p>
+            <a
+              href="/submit-opportunity"
+              class="catalog-empty-state__cta"
+              data-testid="empty-state-submit-cta"
+            >Submit a Mission Problem for I&amp;R Consideration →</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Pagination controls -->
+      <% if (pagination.total_pages > 1) { %>
+        <nav aria-label="Catalog pagination" class="pagination" id="pagination" data-testid="pagination">
+          <button
+            class="pagination__btn"
+            data-testid="pagination-prev"
+            data-page="<%= pagination.page - 1 %>"
+            <%= pagination.page <= 1 ? 'disabled' : '' %>
+            aria-label="Previous page"
+          >← Previous</button>
+
+          <% for (let p = 1; p <= Math.min(pagination.total_pages, 7); p++) { %>
+            <button
+              class="pagination__btn <%= p === pagination.page ? 'pagination__btn--active' : '' %>"
+              data-testid="pagination-page-<%= p %>"
+              data-page="<%= p %>"
+              aria-label="Page <%= p %>"
+              aria-current="<%= p === pagination.page ? 'page' : 'false' %>"
+            ><%= p %></button>
+          <% } %>
+
+          <button
+            class="pagination__btn"
+            data-testid="pagination-next"
+            data-page="<%= pagination.page + 1 %>"
+            <%= pagination.page >= pagination.total_pages ? 'disabled' : '' %>
+            aria-label="Next page"
+          >Next →</button>
+        </nav>
+      <% } else { %>
+        <!-- Hidden pagination placeholder so tests can find it even with 1 page -->
+        <nav aria-label="Catalog pagination" class="pagination" id="pagination" data-testid="pagination" hidden>
+          <button class="pagination__btn" data-testid="pagination-prev" disabled aria-label="Previous page">← Previous</button>
+          <button class="pagination__btn" data-testid="pagination-next" disabled aria-label="Next page">Next →</button>
+        </nav>
+      <% } %>
+
+    </div><!-- /.catalog-main -->
+  </div><!-- /.catalog-layout -->
+</main>
+
+<!-- Inline JSON data for client-side JS bootstrap -->
+<script id="catalog-init-data" type="application/json">
+  <%- JSON.stringify({
+    activeFilters: activeFilters,
+    pagination: pagination,
+  }) %>
+</script>
+
+<script src="/js/catalog.js"></script>
+
+<%- include('partials/layout-foot') %>

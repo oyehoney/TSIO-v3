@@ -1,0 +1,104 @@
+<%
+/**
+ * Catalog card partial.
+ * Required locals: card (CatalogCard object)
+ * Expected card shape:
+ *   { record_id, title, short_summary, maturity_level, maturity_label,
+ *     review_status, review_status_label, mission_area_tags[], technology_area_tags[],
+ *     engagement_options[], is_community_contributed, is_validated_for_reuse, published_at }
+ */
+const summary = card.short_summary
+  ? (card.short_summary.length > 280 ? card.short_summary.slice(0, 277) + '…' : card.short_summary)
+  : null;
+
+const publishedDate = card.published_at
+  ? new Date(card.published_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  : null;
+
+const engagementLabels = {
+  REQUEST_DEMO: 'Demo Available',
+  REQUEST_ADOPTION_DISCUSSION: 'Adoption Discussion',
+  REQUEST_TECHNICAL_GUIDANCE: 'Technical Guidance',
+  REQUEST_BRIEFING: 'Briefing Available',
+};
+const engagementIcons = {
+  REQUEST_DEMO: '📋',
+  REQUEST_ADOPTION_DISCUSSION: '💬',
+  REQUEST_TECHNICAL_GUIDANCE: '🔧',
+  REQUEST_BRIEFING: '📊',
+};
+
+const maturity_level = card.maturity_level;
+const maturity_label = card.maturity_label;
+const review_status = card.review_status;
+const review_status_label = card.review_status_label;
+%>
+<article
+  class="catalog-card"
+  data-testid="catalog-card"
+  data-record-id="<%= card.record_id %>"
+>
+  <!-- Badge row: maturity + review status + optional community/reuse -->
+  <div class="catalog-card__badges">
+    <%- include('maturity-badge', { maturity_level, maturity_label }) %>
+    <%- include('review-status-badge', { review_status, review_status_label }) %>
+    <% if (card.is_community_contributed) { %>
+      <span
+        class="badge badge--community"
+        aria-label="Community-contributed record"
+        data-testid="community-badge"
+      >COMMUNITY</span>
+    <% } %>
+    <% if (card.is_validated_for_reuse) { %>
+      <span
+        class="badge badge--reuse"
+        aria-label="Validated for Reuse"
+        data-testid="reuse-badge"
+      >✓ Validated for Reuse</span>
+    <% } %>
+  </div>
+
+  <!-- Title -->
+  <h3 class="catalog-card__title"><%= card.title %></h3>
+
+  <!-- Short summary (truncated to 280 chars) -->
+  <% if (summary) { %>
+    <p class="catalog-card__summary"><%= summary %></p>
+  <% } %>
+
+  <!-- Tags: mission area + technology area -->
+  <% if ((card.mission_area_tags && card.mission_area_tags.length > 0) || (card.technology_area_tags && card.technology_area_tags.length > 0)) { %>
+    <div class="catalog-card__tags" aria-label="Tags">
+      <% (card.mission_area_tags || []).forEach(function(tag) { %>
+        <span class="tag">🏷 <%= tag %></span>
+      <% }); %>
+      <% (card.technology_area_tags || []).forEach(function(tag) { %>
+        <span class="tag">🏷 <%= tag %></span>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <!-- Engagement options -->
+  <% if (card.engagement_options && card.engagement_options.length > 0) { %>
+    <div class="catalog-card__engagement" aria-label="Available engagement options">
+      <% card.engagement_options.forEach(function(opt) { %>
+        <span class="engagement-indicator">
+          <%= engagementIcons[opt] || '' %> <%= engagementLabels[opt] || opt %>
+        </span>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <!-- Footer: published date + View Record link -->
+  <div class="catalog-card__footer">
+    <% if (publishedDate) { %>
+      <span class="catalog-card__date"><%= publishedDate %></span>
+    <% } %>
+    <a
+      href="/records/<%= card.record_id %>"
+      class="catalog-card__view-link"
+      aria-label="View record: <%= card.title %>"
+      data-testid="view-record-link"
+    >View Record →</a>
+  </div>
+</article>
