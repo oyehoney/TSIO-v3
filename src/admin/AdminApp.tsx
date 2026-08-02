@@ -114,18 +114,18 @@ export const AdminApp: React.FC = () => (
         <Route path="records/:id/edit" element={<RecordEditPage />} />
         <Route path="records/:id/audit" element={<AuditHistoryPage />} />
 
-        {/* Submissions (Wave 6c placeholders) */}
+        {/* Submissions — Wave 6c full implementations */}
         <Route path="submissions/opportunities" element={<OpportunitySubmissionsPage />} />
         <Route path="submissions/contributions" element={<ContributionSubmissionsPage />} />
 
-        {/* Engagement (Wave 6c placeholder) */}
+        {/* Engagement — Wave 6c full implementation */}
         <Route path="engagement" element={<EngagementActivityPage />} />
 
-        {/* Settings (Wave 6c placeholder) */}
-        <Route path="settings" element={<HubSettingsPage />} />
+        {/* Settings — Wave 6c full implementation */}
+        <Route path="settings" element={<SettingsPage />} />
 
-        {/* Content Model reference */}
-        <Route path="content-model" element={<ContentModelPage />} />
+        {/* Content Model reference — Wave 6c full implementation */}
+        <Route path="content-model" element={<ContentModelReferencePage />} />
       </Route>
 
       {/* Redirect /admin/* 404s back to /admin */}
