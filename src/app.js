@@ -1,5 +1,6 @@
 'use strict';
 const express = require('express');
+const path = require('path');
 const { Pool } = require('pg');
 const { getDb } = require('./db');
 
@@ -21,6 +22,13 @@ function getPool() {
 function createApp(options = {}) {
   const app = express();
   app.use(express.json());
+
+  // EJS view engine for server-side rendered pages (Wave 4 — CatalogPage)
+  app.set('view engine', 'ejs');
+  app.set('views', path.join(__dirname, 'views'));
+
+  // Serve static assets (CSS, client-side JS, images)
+  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   // Inject Knex db instance onto req for record routes
   app.use((req, _res, next) => {
@@ -59,6 +67,37 @@ function createApp(options = {}) {
     }
   });
 
+  // Web (EJS) routes for public-facing pages — Wave 4 CatalogPage
+  // Mount BEFORE API routes so / and /catalog are handled before the 404 fallback
+  const webRouter = require('./routes/web');
+  app.use('/', webRouter(getPool));
+
+  // Search API v1 — GET /api/v1/search (TypeScript service, loaded via ts-node or compiled dist)
+  // The SearchHandler/SearchService are TypeScript; require via ts-node/register if available.
+  // Falls back gracefully: if ts-node is not registered, the search API endpoint returns 503.
+  try {
+    // ts-node/register must be called before requiring .ts files
+    if (!process.__ts_node_registered) {
+      try {
+        require('ts-node').register({ transpileOnly: true });
+        process.__ts_node_registered = true;
+      } catch (_tsNodeErr) {
+        // ts-node not available — search API will return 503 SEARCH_UNAVAILABLE
+      }
+    }
+    const { searchRouter } = require('./routes/search');
+    app.use('/api/v1/search', searchRouter);
+  } catch (searchRouteErr) {
+    // If search route fails to load (no ts-node, no compiled output), register
+    // a 503 fallback so the search page gracefully shows unavailability.
+    app.get('/api/v1/search', (_req, res) => {
+      res.status(503).json({
+        error: { code: 'SEARCH_UNAVAILABLE', message: 'Search is temporarily unavailable.' },
+      });
+    });
+    console.warn('[app] Search API route not loaded:', searchRouteErr && searchRouteErr.message);
+  }
+
   // API v1 routes
   const catalogRouter = require('./routes/catalog');
   app.use('/api/v1/catalog', catalogRouter(getPool));
@@ -79,15 +118,30 @@ function createApp(options = {}) {
   const settingsRouter = require('./routes/settings.routes');
   app.use('/api/v1', settingsRouter);
 
-  // 404 handler
+  // 404 handler — return JSON for /api/* paths, HTML for browser paths
   app.use((req, res) => {
-    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } });
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } });
+    }
+    // Browser 404 — render a placeholder page
+    try {
+      return res.status(404).render('placeholder', { pageTitle: 'Page Not Found' });
+    } catch (_renderErr) {
+      return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Page not found.' } });
+    }
   });
 
   // Error handler
   app.use((err, req, res, _next) => {
     console.error('Unhandled error:', err);
-    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
+    if (req.path.startsWith('/api/')) {
+      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
+    }
+    try {
+      return res.status(500).render('placeholder', { pageTitle: 'Server Error' });
+    } catch (_renderErr) {
+      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
+    }
   });
 
   return app;

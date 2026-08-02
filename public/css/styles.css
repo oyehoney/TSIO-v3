@@ -1,0 +1,687 @@
+/*
+ * TSIO Innovation Hub — Global Stylesheet
+ * Design system: color-coded maturity/review badge system (F9 Trust Model)
+ * Layout: server-side rendered EJS pages with progressive enhancement
+ */
+
+/* ─── Reset & Base ─────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #111827;
+  background: #f9fafb;
+}
+
+a {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  text-decoration: underline;
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Top Navigation ─────────────────────────────────────────────────────────── */
+
+.top-nav {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.top-nav__inner {
+  max-width: 90rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  height: 3.5rem;
+}
+
+.top-nav__brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.top-nav__brand:hover,
+.top-nav__brand:focus {
+  text-decoration: underline;
+  color: #e0e7ff;
+}
+
+.top-nav__links {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.top-nav__link {
+  color: #c7d2fe;
+  font-size: 0.875rem;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+}
+
+.top-nav__link:hover,
+.top-nav__link:focus {
+  color: #fff;
+  background: rgba(255,255,255,0.1);
+  text-decoration: none;
+}
+
+.top-nav__link--active {
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+}
+
+/* Global search bar in top nav */
+.top-nav__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 32rem;
+  margin-left: auto;
+}
+
+.top-nav__search-input {
+  flex: 1;
+  height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 0.375rem;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.top-nav__search-input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+.top-nav__search-input:focus {
+  border-color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.15);
+}
+
+.top-nav__search-btn {
+  height: 2rem;
+  padding: 0 0.75rem;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 0.375rem;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.top-nav__search-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ─── Page Layout ────────────────────────────────────────────────────────────── */
+
+.page-wrapper {
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .page-wrapper {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-wrapper {
+    padding: 2rem 2rem;
+  }
+}
+
+/* ─── Search Page Layout ─────────────────────────────────────────────────────── */
+
+.search-page__header {
+  margin-bottom: 1.5rem;
+}
+
+.search-page__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+}
+
+.search-page__result-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.search-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .search-page__body {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ─── Active Filter Chips ────────────────────────────────────────────────────── */
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.filter-chip__remove {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-chip__remove:hover {
+  color: #1e40af;
+}
+
+.clear-filters-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.25rem 0;
+}
+
+.clear-filters-btn:hover {
+  color: #374151;
+}
+
+/* ─── Filter Panel (Sidebar) ──────────────────────────────────────────────────── */
+
+.filter-panel {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .filter-panel {
+    width: 16rem;
+  }
+}
+
+.filter-panel__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group__legend {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.filter-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.filter-option input[type="checkbox"],
+.filter-option input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+  accent-color: #1d4ed8;
+  flex-shrink: 0;
+}
+
+.filter-panel__clear-btn {
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.5rem;
+  text-align: left;
+}
+
+.filter-panel__clear-btn:hover {
+  color: #1e40af;
+}
+
+/* ─── Results Area ───────────────────────────────────────────────────────────── */
+
+.results-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Search Result Card ─────────────────────────────────────────────────────── */
+
+.result-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: box-shadow 0.15s ease;
+}
+
+.result-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+}
+
+.result-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.result-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.result-card__title a {
+  color: #111827;
+}
+
+.result-card__title a:hover,
+.result-card__title a:focus {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Highlight snippet — from ts_headline with <mark> tags */
+.result-card__snippet {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0 0 0.75rem 0;
+}
+
+.result-card__snippet mark {
+  background: #fef9c3;
+  font-weight: 600;
+  font-style: normal;
+  border-radius: 0.125rem;
+  padding: 0 0.125rem;
+}
+
+.result-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.result-card__engagement {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.engagement-indicator {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.result-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 0.75rem;
+}
+
+.result-card__meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.result-card__view-link {
+  font-size: 0.875rem;
+  color: #1d4ed8;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.result-card__view-link:hover {
+  text-decoration: underline;
+  color: #1e40af;
+}
+
+/* ─── Badges (F9 Trust Model color system) ────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* Maturity badges — F9 color system */
+.badge--maturity-idea {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.badge--maturity-experiment {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.badge--maturity-prototype {
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fdba74;
+}
+
+.badge--maturity-production {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.badge--maturity-archived {
+  background: #e5e7eb;
+  color: #374151;
+  border-color: #9ca3af;
+}
+
+/* Review status badge */
+.badge--review-status {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+/* Special badges */
+.badge--community {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.badge--validated-reuse {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+/* ─── Empty / Zero-Results State ─────────────────────────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.empty-state__icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.empty-state__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state__message {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin: 0 0 1rem 0;
+}
+
+.empty-state__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #1d4ed8;
+  color: #fff;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state__cta:hover,
+.empty-state__cta:focus {
+  background: #1e40af;
+  text-decoration: none;
+  color: #fff;
+}
+
+.empty-state__divider {
+  width: 100%;
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 0 0 1.5rem 0;
+}
+
+.empty-state__secondary-link {
+  font-size: 0.875rem;
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.empty-state__secondary-link:hover {
+  color: #1e40af;
+}
+
+/* Blank query prompt */
+.blank-query-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+/* ─── Error States ───────────────────────────────────────────────────────────── */
+
+.error-inline {
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin: 0.25rem 0 0 0;
+}
+
+.error-banner {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #92400e;
+  margin: 0.5rem 0;
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────────────────── */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pagination__btn:hover {
+  background: #f9fafb;
+  text-decoration: none;
+}
+
+.pagination__btn--active {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: #1d4ed8;
+}
+
+.pagination__btn--active:hover {
+  background: #1e40af;
+  text-decoration: none;
+  color: #fff;
+}
+
+/* ─── Loading skeleton ───────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

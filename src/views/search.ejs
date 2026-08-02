@@ -1,0 +1,446 @@
+<%- include('partials/layout-head', { pageTitle: q ? 'Search: ' + q : 'Search' }) %>
+<%- include('partials/top-nav', { currentQuery: q || '', currentPath: '/search' }) %>
+
+<main class="page-wrapper" id="main-content">
+
+  <!-- ── Page Header ──────────────────────────────────────────────────── -->
+  <header class="search-page__header">
+
+    <% if (state === 'blank') { %>
+      <h1 class="search-page__title">Search Innovation Records</h1>
+    <% } else if (q) { %>
+      <h1 class="search-page__title">
+        Search results for: &ldquo;<strong><%= q %></strong>&rdquo;
+      </h1>
+    <% } %>
+
+    <% if (state === 'results') { %>
+      <p class="search-page__result-count" aria-live="polite">
+        <%= pagination.total_count %> record<%= pagination.total_count !== 1 ? 's' : '' %> found
+        <% if (filters.maturity_level.length > 0 || filters.review_status.length > 0 || filters.reuse_potential) { %>
+          (filters applied)
+        <% } %>
+      </p>
+    <% } %>
+
+    <% if (state === 'error' && errorCode === 'QUERY_TOO_LONG') { %>
+      <p class="error-inline" role="alert" data-testid="query-too-long-error">
+        Your search query is too long. Please shorten it to 500 characters or fewer.
+      </p>
+    <% } %>
+
+    <% if (state === 'error' && errorCode === 'SEARCH_UNAVAILABLE') { %>
+      <div class="error-banner" role="alert" data-testid="search-unavailable-banner">
+        Search is temporarily unavailable. Try
+        <a href="/catalog">browsing the catalog</a>.
+      </div>
+    <% } %>
+
+  </header>
+
+  <!-- ── Active Filter Chips ──────────────────────────────────────────── -->
+  <% if (filters.maturity_level.length > 0 || filters.review_status.length > 0 || filters.reuse_potential) { %>
+    <div class="active-filters" aria-label="Active filters" data-testid="active-filters">
+
+      <% filters.maturity_level.forEach(function(v) { %>
+        <span class="filter-chip">
+          <%= v %>
+          <button
+            type="button"
+            class="filter-chip__remove"
+            aria-label="Remove maturity filter: <%= v %>"
+            data-testid="remove-filter-<%= v %>"
+            onclick="removeFilter('maturity_level', '<%= v %>')"
+          >×</button>
+        </span>
+      <% }) %>
+
+      <% filters.review_status.forEach(function(v) { %>
+        <span class="filter-chip">
+          <%= v %>
+          <button
+            type="button"
+            class="filter-chip__remove"
+            aria-label="Remove review status filter: <%= v %>"
+            onclick="removeFilter('review_status', '<%= v %>')"
+          >×</button>
+        </span>
+      <% }) %>
+
+      <% if (filters.reuse_potential) { %>
+        <span class="filter-chip">
+          Reuse: <%= filters.reuse_potential %>
+          <button
+            type="button"
+            class="filter-chip__remove"
+            aria-label="Remove reuse potential filter"
+            onclick="removeFilter('reuse_potential', '<%= filters.reuse_potential %>')"
+          >×</button>
+        </span>
+      <% } %>
+
+      <button
+        type="button"
+        class="clear-filters-btn"
+        onclick="clearAllFilters()"
+        data-testid="clear-all-filters"
+      >Clear all filters</button>
+    </div>
+  <% } %>
+
+  <!-- ── Two-column layout: filter panel + results ────────────────────── -->
+  <div class="search-page__body">
+
+    <!-- Filter panel — shown only when query is present -->
+    <% if (q && state !== 'error') { %>
+      <aside
+        class="filter-panel"
+        aria-label="Refine search results"
+        data-testid="filter-panel"
+      >
+        <h2 class="filter-panel__title">Refine Results</h2>
+
+        <form
+          id="filter-form"
+          method="get"
+          action="/search"
+          aria-label="Search filter form"
+        >
+          <!-- Preserve query -->
+          <input type="hidden" name="q" value="<%= q %>" />
+
+          <!-- ── Maturity Level ── -->
+          <fieldset class="filter-group">
+            <legend class="filter-group__legend">Maturity Level</legend>
+            <div class="filter-group__options">
+              <% [
+                { value: 'IDEA', label: 'Idea' },
+                { value: 'EXPERIMENT_POC', label: 'Experiment / POC' },
+                { value: 'PROTOTYPE_PILOT', label: 'Prototype / Pilot' },
+                { value: 'PRODUCTION_VALIDATED', label: 'Production / Validated' },
+                { value: 'ARCHIVED', label: 'Archived' },
+              ].forEach(function(opt) { %>
+                <label class="filter-option">
+                  <input
+                    type="checkbox"
+                    name="maturity_level"
+                    value="<%= opt.value %>"
+                    <%= filters.maturity_level.includes(opt.value) ? 'checked' : '' %>
+                    onchange="submitFilterForm()"
+                  />
+                  <%= opt.label %>
+                </label>
+              <% }) %>
+            </div>
+          </fieldset>
+
+          <!-- ── Review Status ── -->
+          <fieldset class="filter-group">
+            <legend class="filter-group__legend">Review Status</legend>
+            <div class="filter-group__options">
+              <% [
+                { value: 'SUBMITTED', label: 'Submitted' },
+                { value: 'CURATED', label: 'Curated' },
+                { value: 'TECHNICALLY_REVIEWED', label: 'Tech Reviewed' },
+                { value: 'SECURITY_REVIEWED', label: 'Security Reviewed' },
+                { value: 'POLICY_REVIEWED', label: 'Policy Reviewed' },
+                { value: 'VALIDATED_FOR_REUSE', label: 'Validated for Reuse' },
+                { value: 'SUPERSEDED_RETIRED', label: 'Superseded / Retired' },
+              ].forEach(function(opt) { %>
+                <label class="filter-option">
+                  <input
+                    type="checkbox"
+                    name="review_status"
+                    value="<%= opt.value %>"
+                    <%= filters.review_status.includes(opt.value) ? 'checked' : '' %>
+                    onchange="submitFilterForm()"
+                  />
+                  <%= opt.label %>
+                </label>
+              <% }) %>
+            </div>
+          </fieldset>
+
+          <!-- ── Reuse Potential ── -->
+          <fieldset class="filter-group">
+            <legend class="filter-group__legend">Reuse Potential</legend>
+            <div class="filter-group__options">
+              <% [
+                { value: '', label: 'Any' },
+                { value: 'HIGH', label: 'High' },
+                { value: 'MEDIUM', label: 'Medium' },
+                { value: 'LOW', label: 'Low' },
+              ].forEach(function(opt) { %>
+                <label class="filter-option">
+                  <input
+                    type="radio"
+                    name="reuse_potential"
+                    value="<%= opt.value %>"
+                    <%= filters.reuse_potential === opt.value ? 'checked' : '' %>
+                    onchange="submitFilterForm()"
+                  />
+                  <%= opt.label %>
+                </label>
+              <% }) %>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="sr-only">Apply Filters</button>
+
+        </form>
+
+        <button
+          type="button"
+          class="filter-panel__clear-btn"
+          aria-label="Clear all search filters"
+          onclick="clearAllFilters()"
+        >Clear Filters</button>
+
+      </aside>
+    <% } %>
+
+    <!-- ── Results Area ────────────────────────────────────────────────── -->
+    <div class="results-area">
+
+      <!-- Blank query prompt -->
+      <% if (state === 'blank') { %>
+        <div class="blank-query-prompt" data-testid="blank-query-prompt">
+          <p>Enter a search term to find innovation records.</p>
+        </div>
+      <% } %>
+
+      <!-- Zero results empty state -->
+      <% if (state === 'empty') { %>
+        <div
+          class="empty-state"
+          role="status"
+          aria-live="polite"
+          data-testid="empty-state"
+        >
+          <span class="empty-state__icon" aria-hidden="true">🔍</span>
+          <h2 class="empty-state__title">No records found</h2>
+          <% if (q) { %>
+            <p class="empty-state__message">
+              No records found for &ldquo;<strong><%= q %></strong>&rdquo;.
+            </p>
+          <% } %>
+          <p class="empty-state__message">
+            Try different keywords, or let I&amp;R know about this mission problem:
+          </p>
+          <a
+            href="/submit-opportunity<%= q ? '?context=search&q=' + encodeURIComponent(q) : '' %>"
+            class="empty-state__cta"
+            aria-label="Submit a mission problem for I&R consideration"
+            data-testid="submit-opportunity-cta"
+          >
+            Submit a Mission Problem for I&amp;R Consideration &rarr;
+          </a>
+          <hr class="empty-state__divider" />
+          <p class="empty-state__message">You can also browse all published records:</p>
+          <a
+            href="/catalog"
+            class="empty-state__secondary-link"
+            aria-label="View the Innovation Catalog"
+            data-testid="catalog-link"
+          >
+            View Innovation Catalog &rarr;
+          </a>
+        </div>
+      <% } %>
+
+      <!-- Search results list -->
+      <% if (state === 'results') { %>
+        <ol class="results-list" role="list" aria-label="Search results" data-testid="results-list">
+          <% results.forEach(function(card) { %>
+            <%
+            const maturityClassMap = {
+              IDEA: 'badge--maturity-idea',
+              EXPERIMENT_POC: 'badge--maturity-experiment',
+              PROTOTYPE_PILOT: 'badge--maturity-prototype',
+              PRODUCTION_VALIDATED: 'badge--maturity-production',
+              ARCHIVED: 'badge--maturity-archived',
+            };
+            const maturityClass = maturityClassMap[card.maturity_level] || 'badge--maturity-idea';
+
+            const engagementIcons = {
+              REQUEST_DEMO: '📋',
+              REQUEST_ADOPTION_DISCUSSION: '💬',
+              REQUEST_TECHNICAL_GUIDANCE: '🔧',
+              REQUEST_BRIEFING: '📊',
+            };
+            const engagementLabels = {
+              REQUEST_DEMO: 'Demo Available',
+              REQUEST_ADOPTION_DISCUSSION: 'Adoption Discussion Available',
+              REQUEST_TECHNICAL_GUIDANCE: 'Technical Guidance Available',
+              REQUEST_BRIEFING: 'Briefing Available',
+            };
+
+            const publishedDate = card.published_at
+              ? new Date(card.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+              : null;
+            %>
+            <li role="listitem">
+              <article
+                class="result-card"
+                aria-label="Search result: <%= card.title.replace(/"/g, '&quot;') %>"
+                data-testid="result-card"
+              >
+                <!-- Badges row -->
+                <div class="result-card__badges">
+                  <span
+                    class="badge <%= maturityClass %>"
+                    aria-label="Maturity: <%= card.maturity_label %>"
+                    data-testid="maturity-badge"
+                    data-maturity="<%= card.maturity_level %>"
+                  >
+                    <span aria-hidden="true">●</span>
+                    <%= card.maturity_label %>
+                  </span>
+                  <span
+                    class="badge badge--review-status"
+                    aria-label="Review status: <%= card.review_status_label %>"
+                    data-testid="review-status-badge"
+                  >
+                    <%= card.review_status_label %>
+                  </span>
+                  <% if (card.is_community_contributed) { %>
+                    <span class="badge badge--community">COMMUNITY</span>
+                  <% } %>
+                  <% if (card.is_validated_for_reuse) { %>
+                    <span class="badge badge--validated-reuse">Validated for Reuse ✓</span>
+                  <% } %>
+                </div>
+
+                <!-- Title -->
+                <h2 class="result-card__title">
+                  <a href="/records/<%= card.record_id %>">
+                    <%= card.title %>
+                  </a>
+                </h2>
+
+                <!-- Highlight snippet (ts_headline output — only <mark> tags) -->
+                <% if (card.highlight_snippet) { %>
+                  <p
+                    class="result-card__snippet"
+                    aria-label="Search result excerpt with highlighted terms"
+                    data-testid="highlight-snippet"
+                  ><%- card.highlight_snippet %></p>
+                <% } else if (card.short_summary) { %>
+                  <p class="result-card__snippet"><%= card.short_summary %></p>
+                <% } %>
+
+                <!-- Tags -->
+                <% if (card.mission_area_tags.length > 0 || card.technology_area_tags.length > 0) { %>
+                  <div class="result-card__tags" aria-label="Topic tags">
+                    <% card.mission_area_tags.forEach(function(tag) { %>
+                      <span class="tag">🏷 <%= tag %></span>
+                    <% }) %>
+                    <% card.technology_area_tags.forEach(function(tag) { %>
+                      <span class="tag">🏷 <%= tag %></span>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <!-- Engagement indicators -->
+                <% if (card.engagement_options.length > 0) { %>
+                  <div class="result-card__engagement" aria-label="Available engagement options">
+                    <% card.engagement_options.forEach(function(opt) { %>
+                      <span class="engagement-indicator">
+                        <%= engagementIcons[opt] || '•' %> <%= engagementLabels[opt] || opt %>
+                      </span>
+                    <% }) %>
+                  </div>
+                <% } %>
+
+                <!-- Footer: date, reuse potential, view link -->
+                <div class="result-card__footer">
+                  <div class="result-card__meta">
+                    <% if (publishedDate) { %>
+                      <span>Published: <%= publishedDate %></span>
+                    <% } %>
+                    <% if (card.reuse_potential) { %>
+                      <span>Reuse Potential: <%= card.reuse_potential.charAt(0) + card.reuse_potential.slice(1).toLowerCase() %></span>
+                    <% } %>
+                  </div>
+                  <a
+                    href="/records/<%= card.record_id %>"
+                    class="result-card__view-link"
+                    aria-label="View full record: <%= card.title.replace(/"/g, '&quot;') %>"
+                    data-testid="view-record-link"
+                  >
+                    View &rarr;
+                  </a>
+                </div>
+
+              </article>
+            </li>
+          <% }) %>
+        </ol>
+
+        <!-- Pagination -->
+        <% if (pagination.total_pages > 1) { %>
+          <%
+          const currentPage = pagination.page;
+          const totalPages = pagination.total_pages;
+
+          // Build base URL params (preserve q and all filters, swap page)
+          function buildPageUrl(p) {
+            const params = new URLSearchParams();
+            if (q) params.set('q', q);
+            filters.maturity_level.forEach(function(v) { params.append('maturity_level', v); });
+            filters.review_status.forEach(function(v) { params.append('review_status', v); });
+            filters.contributing_office.forEach(function(v) { params.append('contributing_office', v); });
+            if (filters.reuse_potential) params.set('reuse_potential', filters.reuse_potential);
+            params.set('page', String(p));
+            return '/search?' + params.toString();
+          }
+
+          // Show pages within 2 of current
+          const pageNumbers = [];
+          for (let p = 1; p <= totalPages; p++) {
+            if (Math.abs(p - currentPage) <= 2) pageNumbers.push(p);
+          }
+          %>
+          <nav
+            class="pagination"
+            aria-label="Search results pagination"
+            data-testid="pagination"
+          >
+            <% if (currentPage > 1) { %>
+              <a
+                href="<%= buildPageUrl(currentPage - 1) %>"
+                class="pagination__btn"
+                aria-label="Previous page"
+              >← Previous</a>
+            <% } %>
+
+            <% pageNumbers.forEach(function(p) { %>
+              <a
+                href="<%= buildPageUrl(p) %>"
+                class="pagination__btn <%= p === currentPage ? 'pagination__btn--active' : '' %>"
+                aria-label="Page <%= p %>"
+                <%= p === currentPage ? 'aria-current="page"' : '' %>
+              ><%= p %></a>
+            <% }) %>
+
+            <% if (currentPage < totalPages) { %>
+              <a
+                href="<%= buildPageUrl(currentPage + 1) %>"
+                class="pagination__btn"
+                aria-label="Next page"
+              >Next →</a>
+            <% } %>
+          </nav>
+        <% } %>
+      <% } %>
+
+    </div><!-- /results-area -->
+
+  </div><!-- /search-page__body -->
+
+</main>
+
+<!-- Client-side JS for filter navigation (progressive enhancement) -->
+<script src="/js/search-filters.js"></script>
+
+<%- include('partials/layout-foot') %>
