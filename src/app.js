@@ -71,6 +71,14 @@ function createApp(options = {}) {
   const submissionsRouter = require('./routes/submissions');
   app.use('/api/v1', submissionsRouter);
 
+  // Engagement routes (Wave 3c — Plan 08)
+  const engagementRouter = require('./routes/engagement.routes');
+  app.use('/api/v1', engagementRouter);
+
+  // Settings routes (Wave 3c — Plan 08)
+  const settingsRouter = require('./routes/settings.routes');
+  app.use('/api/v1', settingsRouter);
+
   // 404 handler
   app.use((req, res) => {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } });

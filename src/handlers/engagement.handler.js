@@ -125,8 +125,8 @@ async function listEngagementRequests(req, res) {
  */
 async function updateEngagementRequestStatus(req, res) {
   const { request_id } = req.params;
-  // req.user is set by authenticateOidc middleware; fall back to req.session.user for tests
-  const curatorUserId = (req.user || req.session.user || {}).user_id;
+  // req.user is set by app.js session→user mapping; fall back to req.session.user for safety
+  const curatorUserId = (req.user || (req.session && req.session.user) || {}).user_id;
 
   try {
     const updated = await engagementService.updateEngagementRequestStatus(

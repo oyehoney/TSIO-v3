@@ -201,7 +201,8 @@ async function createEngagementRequest(db, body, ipAddress) {
 
   // ── Email (NON-FATAL) ─────────────────────────────────────────────────────
   // TechArch §2.1: "Failure is non-fatal: logs error, submission/request record remains persisted."
-  // Routing email is read from hub_settings AT SEND TIME (not cached at startup) per TechArch §2.1.
+  // engagement_routing_email is read from hub_settings AT SEND TIME (not cached at startup)
+  // via EmailService.sendRoutingNotification → SettingsRepository.getSettingValue per TechArch §2.1.
   try {
     await EmailService.sendRoutingNotification('engagement_request', request);
   } catch (err) {
