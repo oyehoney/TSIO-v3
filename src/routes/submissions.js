@@ -36,4 +36,6 @@ router.get('/admin/contribution-submissions', requireCurator, getContributionSub
 // PATCH /api/v1/admin/contribution-submissions/:id — update disposition
 router.patch('/admin/contribution-submissions/:id', requireCurator, patchContributionDisposition);
 
-module.exports = router;
+// Export as both default and named (submissionsRouter) for contract compatibility
+const submissionsRouter = router;
+module.exports = submissionsRouter;
