@@ -69,7 +69,7 @@ export const NextActionPanel: React.FC<Props> = ({
             <button
               key={optType}
               className={`engagement-btn ${isPrimary ? 'engagement-btn--primary' : 'engagement-btn--secondary'}`}
-              onClick={() => onEngagementRequest(optType, record)}
+              onClick={(e) => onEngagementRequest(optType, record, e.currentTarget as HTMLButtonElement)}
               aria-label={ENGAGEMENT_LABELS[optType]}
             >
               <span aria-hidden="true">{ENGAGEMENT_ICONS[optType]}</span>{' '}

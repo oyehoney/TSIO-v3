@@ -69,6 +69,12 @@ export type PerspectiveView = 'executive' | 'technical';
 
 /**
  * Callback type for engagement request actions.
- * Wave 5 (W5-b) replaces the noop stub in RecordPage with the actual modal trigger.
+ * Wave 5 (W5-b) wires this to the EngagementRequestModal in RecordPage.
+ * The optional triggerEl parameter is the button that was clicked — used to return
+ * focus on modal close (WCAG 2.1 AA focus management).
  */
-export type OnEngagementRequest = (engagementType: EngagementOptionType, record: InnovationRecord) => void;
+export type OnEngagementRequest = (
+  engagementType: EngagementOptionType,
+  record: InnovationRecord,
+  triggerEl?: HTMLButtonElement
+) => void;

@@ -9,7 +9,7 @@
  * - Updating ?view= URL param on toggle (via React Router setSearchParams — no page reload)
  * - Breadcrumb "← Back to Catalog" linking to /catalog
  * - Composing all sub-components in correct UX Mockup order
- * - onEngagementRequest stub (Wave 5 wires the modal here)
+ * - EngagementRequestModal wired to NextActionPanel buttons (Wave 5 / W5-b)
  *
  * Security:
  * - T-11-01: All text rendered as React children (never dangerouslySetInnerHTML)
@@ -18,16 +18,15 @@
  * - T-11-04: :id passed to backend fetch; backend validates UUID + PUBLISHED state
  * - T-11-06: trust_disclaimers rendered from API response (server-computed, never frontend-computed)
  *
- * Wave 5 integration: Replace onEngagementRequest prop with actual modal trigger.
- * Export: onEngagementRequest type so Wave 5 (W5-b) can wire the engagement modal.
+ * Wave 5 integration: EngagementRequestModal is mounted here and triggered by
+ * onEngagementRequest passed to NextActionPanel. Modal state (which type, isOpen) is owned here.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import type {
   InnovationRecord,
   PerspectiveView,
-  OnEngagementRequest,
   EngagementOptionType,
 } from '../types/record';
 import { PerspectiveToggle } from '../components/record/PerspectiveToggle';
@@ -36,6 +35,8 @@ import { TechnicalPerspectivePanel } from '../components/record/TechnicalPerspec
 import { TrustDisclaimersSection } from '../components/record/TrustDisclaimersSection';
 import { ArtifactLinksSection } from '../components/record/ArtifactLinksSection';
 import { NextActionPanel } from '../components/record/NextActionPanel';
+import { EngagementRequestModal } from '../components/engagement/EngagementRequestModal';
+import type { EngagementType } from '../components/engagement/EngagementRequestModal';
 import { NotFoundPage } from './NotFoundPage';
 
 // Maturity badge color map per UX Mockup §Color System for Trust Signals
@@ -47,23 +48,16 @@ const MATURITY_BADGE_COLORS: Record<string, string> = {
   ARCHIVED: '#374151',
 };
 
-/**
- * Wave 5 will replace this stub with the actual modal trigger.
- * T-11-07: This noop is only used in development — Wave 5 wires the real handler.
- * TODO Wave 5 (W5-b): wire engagement request modal here
- */
-const noop: OnEngagementRequest = (_type: EngagementOptionType, _record: InnovationRecord) => {
-  // TODO Wave 5 (W5-b): wire engagement request modal here
-  console.warn('onEngagementRequest: engagement modal not yet connected (Wave 5)');
+// Map EngagementOptionType → EngagementType (modal type).
+// SUBMIT_RELATED_PROBLEM is excluded from the modal (handled as link separately).
+const OPTION_TO_ENGAGEMENT_TYPE: Partial<Record<EngagementOptionType, EngagementType>> = {
+  REQUEST_DEMO: 'REQUEST_DEMO',
+  REQUEST_ADOPTION_DISCUSSION: 'REQUEST_ADOPTION_DISCUSSION',
+  REQUEST_TECHNICAL_GUIDANCE: 'REQUEST_TECHNICAL_GUIDANCE',
+  REQUEST_BRIEFING: 'REQUEST_BRIEFING',
 };
 
-interface RecordPageProps {
-  onEngagementRequest?: OnEngagementRequest;
-}
-
-export const RecordPage: React.FC<RecordPageProps> = ({
-  onEngagementRequest = noop,
-}) => {
+export const RecordPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -76,6 +70,15 @@ export const RecordPage: React.FC<RecordPageProps> = ({
   const [view, setView] = useState<PerspectiveView>(
     viewParam === 'technical' ? 'technical' : 'executive'
   );
+
+  // Modal state — owned by RecordPage, passed to NextActionPanel and EngagementRequestModal
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    engagementType: EngagementType | null;
+  }>({ isOpen: false, engagementType: null });
+
+  // Track which button triggered the modal so we can return focus on close (WCAG 2.1 AA)
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!id) {
@@ -113,6 +116,39 @@ export const RecordPage: React.FC<RecordPageProps> = ({
     },
     [setSearchParams]
   );
+
+  /**
+   * Called when user clicks an engagement button in NextActionPanel.
+   * Opens the EngagementRequestModal with the matching engagement type.
+   * Captures the triggering button element to restore focus on close (WCAG 2.1 AA).
+   *
+   * Wave 5 (W5-b) — replaces the noop stub from Plan 11.
+   */
+  const handleEngagementRequest = useCallback(
+    (optType: EngagementOptionType, _record: InnovationRecord, triggerEl?: HTMLButtonElement) => {
+      const engagementType = OPTION_TO_ENGAGEMENT_TYPE[optType];
+      if (!engagementType) {
+        // SUBMIT_RELATED_PROBLEM and any unrecognized types are not modal-based
+        return;
+      }
+      triggerButtonRef.current = triggerEl ?? null;
+      setModalState({ isOpen: true, engagementType });
+    },
+    []
+  );
+
+  /**
+   * Called when modal closes (× button, Cancel, Escape, or after confirmation Close).
+   * Returns focus to the button that opened the modal (WCAG 2.1 AA).
+   */
+  const handleModalClose = useCallback(() => {
+    setModalState({ isOpen: false, engagementType: null });
+    // Return focus to the trigger button (WCAG 2.1 AA focus management)
+    if (triggerButtonRef.current) {
+      triggerButtonRef.current.focus();
+      triggerButtonRef.current = null;
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -185,12 +221,12 @@ export const RecordPage: React.FC<RecordPageProps> = ({
       {/* T-11-06: trust_disclaimers from API response; frontend never suppresses/recomputes */}
       <TrustDisclaimersSection disclaimers={record.trust_disclaimers} />
 
-      {/* Next-Action Panel — Wave 5 wires engagement modal to onEngagementRequest */}
+      {/* Next-Action Panel — engagement buttons wired to modal (Wave 5 / W5-b) */}
       <NextActionPanel
         engagement_options={record.engagement_options}
         record={record}
         view={view}
-        onEngagementRequest={onEngagementRequest}
+        onEngagementRequest={handleEngagementRequest}
       />
 
       {/* Artifact Links — view-specific heading per UX Mockup */}
@@ -218,6 +254,18 @@ export const RecordPage: React.FC<RecordPageProps> = ({
         )}
         <p className="record-id-display">Record ID: {record.record_id}</p>
       </footer>
+
+      {/* Engagement Request Modal — portal overlay, not a new route */}
+      {/* Mounted here so it can access record.title and record.record_id */}
+      {modalState.isOpen && modalState.engagementType && (
+        <EngagementRequestModal
+          engagementType={modalState.engagementType}
+          recordId={record.record_id}
+          recordTitle={record.title}
+          isOpen={modalState.isOpen}
+          onClose={handleModalClose}
+        />
+      )}
     </main>
   );
 };
