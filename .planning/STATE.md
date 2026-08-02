@@ -3,8 +3,8 @@ pivota_spec_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed implement-full-tsio-innovation-hub-web-a-11-PLAN.md
-last_updated: "2026-08-02T03:43:00Z"
+stopped_at: Completed implement-full-tsio-innovation-hub-web-a-13-PLAN.md
+last_updated: "2026-08-02T04:30:00Z"
 last_activity: 2026-07-29 — Roadmap created; requirements mapped to 6 phases
 progress:
   total_phases: 6
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase implement-full-tsio-innovation-hub-web-a P10 | 90 | 2 tasks | 13 files |
 | Phase implement-full-tsio-innovation-hub-web-a P11 | 84 | 2 tasks | 18 files |
+| Phase implement-full-tsio-innovation-hub-web-a P13 | 45 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,7 @@ Recent decisions affecting current work:
 - Content cold-start mitigation: Commit to 3–5 curated records at launch; Audio Security POC is anchor record (Phase 6).
 - [Phase implement-full-tsio-innovation-hub-web-a]: SearchPage uses EJS SSR (not React SPA): adapted all components to EJS templates, direct searchService.js calls, TEST_MOCK_SEARCH fixture mode for Playwright tests
 - [Phase implement-full-tsio-innovation-hub-web-a P11]: RecordPage dual implementation: EJS SSR (record.ejs) is the functional page; React TSX components (src/client/) provide the SPA layer. onEngagementRequest noop stub documented for Wave 5 wiring. Test-seed endpoint gated on NODE_ENV !== 'production' (T-11-07).
+- [Phase implement-full-tsio-innovation-hub-web-a P13]: CaptchaWidget uses grecaptcha global API (not react-google-recaptcha npm) to avoid require() in browser-targeted TS. Dev-bypass via window.__ENV.CAPTCHA_SITE_KEY absence. WCAG focus trap uses document keydown listener + useRef triggerButtonRef in RecordPage for focus return on modal close.
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-02T03:43:00Z
-Stopped at: Completed implement-full-tsio-innovation-hub-web-a-11-PLAN.md
+Last session: 2026-08-02T04:30:00Z
+Stopped at: Completed implement-full-tsio-innovation-hub-web-a-13-PLAN.md
 Resume file: None
