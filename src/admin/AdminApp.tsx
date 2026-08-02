@@ -8,14 +8,14 @@
  *   /admin/records/new       → <AdminShell><RecordEditPage /></AdminShell> (auth required)
  *   /admin/records/:id/edit  → <AdminShell><RecordEditPage /></AdminShell> (auth required)
  *   /admin/records/:id/audit → <AdminShell><AuditHistoryPlaceholder /></AdminShell>
- *   /admin/submissions/opportunities → <AdminShell><SubmissionsPlaceholder /></AdminShell>
- *   /admin/submissions/contributions → <AdminShell><ContributionsPlaceholder /></AdminShell>
- *   /admin/engagement        → <AdminShell><EngagementPlaceholder /></AdminShell>
- *   /admin/settings          → <AdminShell><SettingsPlaceholder /></AdminShell>
- *   /admin/content-model     → <AdminShell><ContentModelPlaceholder /></AdminShell>
+ *   /admin/submissions/opportunities → <AdminShell><OpportunitySubmissionsPage /></AdminShell>
+ *   /admin/submissions/contributions → <AdminShell><ContributionSubmissionsPage /></AdminShell>
+ *   /admin/engagement        → <AdminShell><EngagementActivityPage /></AdminShell>
+ *   /admin/settings          → <AdminShell><SettingsPage /></AdminShell>
+ *   /admin/content-model     → <AdminShell><ContentModelReferencePage /></AdminShell>
  *
  * ProtectedRoute: calls useAdminAuth() — redirects to /admin/login on 401/403.
- * Wave 6c placeholder pages render actual JSX divs (not null/empty).
+ * Wave 6c: all placeholder pages replaced with full implementations.
  *
  * F8: Curation and Administration — admin SPA root
  */
@@ -28,6 +28,11 @@ import { DashboardPage } from './pages/DashboardPage';
 import { RecordsListPage } from './pages/RecordsListPage';
 import { RecordEditPage } from './pages/RecordEditPage';
 import { useAdminAuth } from './hooks/useAdminAuth';
+import { OpportunitySubmissionsPage } from './pages/submissions/OpportunitySubmissionsPage';
+import { ContributionSubmissionsPage } from './pages/submissions/ContributionSubmissionsPage';
+import { EngagementActivityPage } from './pages/EngagementActivityPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { ContentModelReferencePage } from './pages/ContentModelReferencePage';
 
 /**
  * ProtectedRoute — auth guard wrapper.
@@ -75,108 +80,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Wave 6c placeholder pages — must render actual JSX divs
+// Audit History placeholder (Wave 6b — not yet implemented)
 const AuditHistoryPage: React.FC = () => (
   <div style={{ padding: '24px' }}>
     <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
       Audit History
     </h1>
     <p style={{ color: '#6B7280' }}>Audit history feature coming in Wave 6b.</p>
-  </div>
-);
-
-const OpportunitySubmissionsPage: React.FC = () => (
-  <div style={{ padding: '24px' }}>
-    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
-      Opportunity Submissions
-    </h1>
-    <p style={{ color: '#6B7280' }}>Opportunity submissions management coming in Wave 6c.</p>
-  </div>
-);
-
-const ContributionSubmissionsPage: React.FC = () => (
-  <div style={{ padding: '24px' }}>
-    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
-      Contribution Submissions
-    </h1>
-    <p style={{ color: '#6B7280' }}>Contribution submissions management coming in Wave 6c.</p>
-  </div>
-);
-
-const EngagementActivityPage: React.FC = () => (
-  <div style={{ padding: '24px' }}>
-    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
-      Engagement Activity Log
-    </h1>
-    <p style={{ color: '#6B7280' }}>Engagement activity log coming in Wave 6c.</p>
-  </div>
-);
-
-const HubSettingsPage: React.FC = () => (
-  <div style={{ padding: '24px' }}>
-    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
-      Hub Settings
-    </h1>
-    <p style={{ color: '#6B7280' }}>Hub settings management coming in Wave 6c.</p>
-  </div>
-);
-
-const ContentModelPage: React.FC = () => (
-  <div style={{ padding: '24px' }}>
-    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
-      Content Model Reference
-    </h1>
-    <p style={{ color: '#6B7280', marginBottom: '24px' }}>
-      Reference documentation for maturity levels and review statuses.
-    </p>
-
-    <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
-      Maturity Levels
-    </h2>
-    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px' }}>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>IDEA</strong> — A problem or opportunity has been identified and captured; no technical exploration yet.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>EXPERIMENT / POC</strong> — A targeted exploration was conducted to test feasibility; results may be positive, negative, or inconclusive.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>PROTOTYPE / PILOT</strong> — A working model or limited deployment was built; tested in a realistic environment.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>PRODUCTION / VALIDATED</strong> — Fully deployed and operational; or a proven architectural pattern validated through review.
-      </li>
-      <li style={{ padding: '8px 0' }}>
-        <strong>ARCHIVED</strong> — Work is no longer active; captured for institutional learning; not recommended for adoption.
-      </li>
-    </ul>
-
-    <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#374151', marginBottom: '12px' }}>
-      Review Statuses
-    </h2>
-    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>SUBMITTED</strong> — Record is in the system; not yet curated.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>CURATED</strong> — I&amp;R curator has structured and enriched the record; not yet externally reviewed.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>TECHNICALLY_REVIEWED</strong> — I&amp;R or AO technical team has assessed architecture and findings.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>SECURITY_REVIEWED</strong> — Cybersecurity or ISSO review of security implications completed.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>POLICY_REVIEWED</strong> — Legal, privacy, or policy review completed.
-      </li>
-      <li style={{ padding: '8px 0', borderBottom: '1px solid #F3F4F6' }}>
-        <strong>VALIDATED_FOR_REUSE</strong> — All applicable reviews completed; recommended as a reuse-ready pattern.
-      </li>
-      <li style={{ padding: '8px 0' }}>
-        <strong>SUPERSEDED_RETIRED</strong> — Record replaced by a newer version or retired; retained for institutional record.
-      </li>
-    </ul>
   </div>
 );
 
