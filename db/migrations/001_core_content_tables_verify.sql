@@ -37,7 +37,8 @@ SELECT column_name, data_type, is_nullable, column_default
 --   created_by_user_id, updated_by_user_id, deleted_at
 
 -- ── 3. CHECK constraints on innovation_records ────────────────────────────────
-SELECT conname, consrc
+-- NOTE: pg_constraint.consrc was removed in PostgreSQL 12; use pg_get_constraintdef().
+SELECT conname, pg_get_constraintdef(oid) AS consrc
   FROM pg_constraint
  WHERE conrelid = 'innovation_records'::regclass
    AND contype = 'c'

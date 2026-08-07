@@ -20,17 +20,81 @@ services:
       retries: 5
       start_period: 10s
 
-  app:
-    build: .
+  db-migrate:
+    image: postgres:16
+    restart: "no"
+    environment:
+      PGPASSWORD: tsio_hub_dev_password
+    volumes:
+      - ./db/migrations:/migrations:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - bash
+      - -c
+      - |
+        echo 'Applying migrations idempotently...'
+        psql -h db -U tsio_hub_user -d tsio_hub -f /migrations/001_core_content_tables.sql 2>&1 || true
+        psql -h db -U tsio_hub_user -d tsio_hub -f /migrations/001_supporting_tables.sql 2>&1 || true
+        psql -h db -U tsio_hub_user -d tsio_hub -f /migrations/002_user_sessions.sql 2>&1 || true
+        echo 'Migrations complete.'
+
+  db-seed:
+    image: postgres:16
+    restart: "no"
+    environment:
+      PGPASSWORD: tsio_hub_dev_password
+    volumes:
+      - ./db/seeds:/seeds:ro
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    command: >
+      bash -c "
+        psql -h db -U tsio_hub_user -d tsio_hub -f /seeds/seed_audio_security_poc.sql &&
+        psql -h db -U tsio_hub_user -d tsio_hub -f /seeds/seed_archived_experiment.sql &&
+        echo 'Seeds applied successfully.'
+      "
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://tsio_hub_user:tsio_hub_dev_password@db:5432/tsio_hub
       NODE_ENV: development
+      PORT: 3001
+      # Dev/preview auth bypass — grants CURATOR access without Azure AD.
+      # Set to 'false' or remove entirely in production (NODE_ENV=production is the safety gate).
+      DEV_AUTH_BYPASS: "true"
+      # Session secret — use a real secret in production via secrets manager
+      SESSION_SECRET: "dev-preview-session-secret-not-for-production"
+      # OIDC placeholders — unused when DEV_AUTH_BYPASS=true
+      OIDC_ISSUER: "https://login.microsoftonline.com/common/v2.0"
+      OIDC_CLIENT_ID: "dev-placeholder"
+      OIDC_CLIENT_SECRET: "dev-placeholder"
+      OIDC_REDIRECT_URI: "http://localhost:3000/auth/callback"
+    ports:
+      - "3001:3001"
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      # Must match the backend DEV_AUTH_BYPASS setting — both must be true together
+      VITE_DEV_AUTH_BYPASS: "true"
     ports:
       - "3000:3000"
     depends_on:
-      db:
-        condition: service_healthy
+      - api
 
 volumes:
   postgres_data:

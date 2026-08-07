@@ -1,6 +1,5 @@
 'use strict';
 const express = require('express');
-const path = require('path');
 const { Pool } = require('pg');
 const { getDb } = require('./db');
 
@@ -21,14 +20,10 @@ function getPool() {
  */
 function createApp(options = {}) {
   const app = express();
+  // Trust first proxy — required for express-rate-limit to read X-Forwarded-For
+  // (used in production behind load balancer; also allows test IP isolation via X-Forwarded-For)
+  app.set('trust proxy', 1);
   app.use(express.json());
-
-  // EJS view engine for server-side rendered pages (Wave 4 — CatalogPage)
-  app.set('view engine', 'ejs');
-  app.set('views', path.join(__dirname, 'views'));
-
-  // Serve static assets (CSS, client-side JS, images)
-  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   // Inject Knex db instance onto req for record routes
   app.use((req, _res, next) => {
@@ -36,26 +31,35 @@ function createApp(options = {}) {
     next();
   });
 
-  // Session middleware — use provided test middleware or default no-op
+  // ── Session middleware ────────────────────────────────────────────────────────
+  // In tests: use the injected sessionMiddleware (lightweight in-memory store).
+  // In production: use PostgreSQL-backed express-session (connect-pg-simple).
+  // TechArch §5.1: HttpOnly/Secure/SameSite=Strict session cookie; 1-hour TTL.
   if (options.sessionMiddleware) {
     app.use(options.sessionMiddleware);
   } else {
-    // Default: no session (unauthenticated)
-    app.use((req, _res, next) => {
-      if (!req.session) req.session = {};
-      next();
-    });
+    const { buildSessionMiddleware } = require('./middleware/auth');
+    app.use(buildSessionMiddleware(getPool()));
   }
 
-  // Map req.session.user → req.user so requireCurator/requireAdmin work consistently.
-  // In production, authenticateOidc does this mapping. In tests, session middleware
-  // sets req.session.user and this middleware propagates it to req.user.
-  app.use((req, _res, next) => {
-    if (req.session && req.session.user) {
-      req.user = req.session.user;
-    }
-    next();
-  });
+  // ── Dev/preview auth bypass ──────────────────────────────────────────────────
+  // When DEV_AUTH_BYPASS=true (non-production only), injects a synthetic CURATOR
+  // session so all admin routes work without a real Azure AD configuration.
+  // No-op in production regardless of the env var setting.
+  const { devAuthBypass } = require('./middleware/devAuthBypass');
+  app.use(devAuthBypass());
+
+  // ── OIDC auth routes ──────────────────────────────────────────────────────────
+  // GET  /auth/login    — initiates PKCE OIDC authorization redirect to Azure AD
+  // GET  /auth/callback — exchanges authorization code for tokens, upserts users table, creates session
+  // GET  /auth/logout   — destroys session, redirects to IdP end-session endpoint
+  // TechArch §2.3 Authentication Flow, §5.1
+  {
+    const { redirectToLogin, buildOidcCallbackHandler, handleLogout } = require('./middleware/auth');
+    app.get('/auth/login', redirectToLogin);
+    app.get('/auth/callback', buildOidcCallbackHandler(getDb()));
+    app.get('/auth/logout', handleLogout);
+  }
 
   // Health check — returns 200 with DB ping
   app.get('/healthz', async (req, res) => {
@@ -67,90 +71,53 @@ function createApp(options = {}) {
     }
   });
 
-  // Web (EJS) routes for public-facing pages — Wave 4 CatalogPage
-  // Mount BEFORE API routes so / and /catalog are handled before the 404 fallback
-  const webRouter = require('./routes/web');
-  app.use('/', webRouter(getPool));
+  // ── API v1 routes ─────────────────────────────────────────────────────────────
 
-  // Search API v1 — GET /api/v1/search (TypeScript service, loaded via ts-node or compiled dist)
-  // The SearchHandler/SearchService are TypeScript; require via ts-node/register if available.
-  // Falls back gracefully: if ts-node is not registered, the search API endpoint returns 503.
-  try {
-    // ts-node/register must be called before requiring .ts files
-    if (!process.__ts_node_registered) {
-      try {
-        require('ts-node').register({ transpileOnly: true });
-        process.__ts_node_registered = true;
-      } catch (_tsNodeErr) {
-        // ts-node not available — search API will return 503 SEARCH_UNAVAILABLE
-      }
-    }
-    const { searchRouter } = require('./routes/search');
-    app.use('/api/v1/search', searchRouter);
-  } catch (searchRouteErr) {
-    // If search route fails to load (no ts-node, no compiled output), register
-    // a 503 fallback so the search page gracefully shows unavailability.
-    app.get('/api/v1/search', (_req, res) => {
-      res.status(503).json({
-        error: { code: 'SEARCH_UNAVAILABLE', message: 'Search is temporarily unavailable.' },
-      });
-    });
-    console.warn('[app] Search API route not loaded:', searchRouteErr && searchRouteErr.message);
-  }
-
-  // API v1 routes
+  // Catalog routes — F0 Innovation Catalog (public)
   const catalogRouter = require('./routes/catalog');
   app.use('/api/v1/catalog', catalogRouter(getPool));
 
-  // Record routes (Wave 2c — Plan 05)
+  // Record routes — F2 Innovation Record CRUD + lifecycle (CURATOR-gated write ops)
   const recordRouter = require('./handlers/recordHandler');
   app.use('/api/v1', recordRouter);
 
-  // Submission routes (Wave 3b — Plan 07)
+  // Submission routes — F5 Opportunity Submission + F6 Contribution Submission
+  // Public POST endpoints + CURATOR-gated admin GET/PATCH endpoints
   const submissionsRouter = require('./routes/submissions');
   app.use('/api/v1', submissionsRouter);
 
-  // Engagement routes (Wave 3c — Plan 08)
+  // Engagement routes — F7 Engagement Routing
+  // Public POST endpoint + CURATOR-gated admin GET/PATCH endpoints
   const engagementRouter = require('./routes/engagement.routes');
   app.use('/api/v1', engagementRouter);
 
-  // Settings routes (Wave 3c — Plan 08)
+  // Settings routes — F8 Administration (hub_settings, all CURATOR-gated)
   const settingsRouter = require('./routes/settings.routes');
   app.use('/api/v1', settingsRouter);
 
-  // Test-seed routes — ONLY registered in non-production environments
-  // Security: T-11-07 — test harness endpoints must NEVER be active in production.
-  // The Wave 7 integration plan should add a production smoke test that asserts
-  // /api/v1/test-seed/published-record returns 404 in the production build.
+  // Admin routes — F8 Administration: dashboard, records list, content model reference,
+  // and create-record-from-contribution. All CURATOR-gated via admin router middleware.
+  // NOTE: submissions/engagement/settings admin routes are handled by their own routers above;
+  // this router adds the remaining admin-only endpoints.
+  const adminRouter = require('./routes/admin');
+  app.use('/api/v1/admin', adminRouter);
+
+  // Test-seed routes (Playwright e2e test harness)
+  // SECURITY: gated on NODE_ENV !== 'production' (T-11-07)
   if (process.env.NODE_ENV !== 'production') {
     const testSeedRouter = require('./routes/testSeed');
     app.use('/api/v1/test-seed', testSeedRouter);
   }
 
-  // 404 handler — return JSON for /api/* paths, HTML for browser paths
+  // 404 handler
   app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } });
-    }
-    // Browser 404 — render a placeholder page
-    try {
-      return res.status(404).render('placeholder', { pageTitle: 'Page Not Found' });
-    } catch (_renderErr) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Page not found.' } });
-    }
+    res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } });
   });
 
   // Error handler
   app.use((err, req, res, _next) => {
     console.error('Unhandled error:', err);
-    if (req.path.startsWith('/api/')) {
-      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
-    }
-    try {
-      return res.status(500).render('placeholder', { pageTitle: 'Server Error' });
-    } catch (_renderErr) {
-      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
-    }
+    res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
   });
 
   return app;

@@ -1,200 +1,185 @@
 ---
 phase: implement-full-tsio-innovation-hub-web-a
-plan: "09"
-subsystem: frontend-ui
-tags: [catalog, ejs, express, ajax, maturity-badges, wcag, filter-panel, server-side-rendering]
+plan: 09
+subsystem: frontend-catalog
+tags: [react, vite, typescript, tailwind, playwright, catalog, badges, filtering, pagination]
 dependency_graph:
-  requires:
-    - plan: "03"
-      provides: "GET /api/v1/catalog → CatalogCard[], GET /api/v1/catalog/filters → CatalogFilters"
-  provides:
-    - artifact: "src/views/catalog.ejs"
-      exports: ["GET /catalog — server-side rendered CatalogPage", "GET / → redirects to /catalog"]
-    - artifact: "src/views/partials/maturity-badge.ejs"
-      exports: ["MaturityBadge color-coded partial for 5 maturity levels"]
-    - artifact: "src/views/partials/catalog-card.ejs"
-      exports: ["CatalogCard partial with all badges, tags, engagement, View Record link"]
-    - artifact: "public/js/catalog.js"
-      exports: ["AJAX catalog controller with URL state sync and aria-live"]
-    - artifact: "e2e/catalog.spec.ts"
-      exports: ["47 Playwright e2e tests for CatalogPage"]
-  affects:
-    - "src/routes/web.js (catalog route referenced — already committed in Plan 10)"
-    - "src/app.js (EJS engine setup — already committed in Plan 10)"
+  requires: [03-PLAN.md (GET /api/v1/catalog, GET /api/v1/catalog/filters)]
+  provides: [CatalogPage, CatalogCard, MaturityBadge, FilterPanel, useCatalog, client/src/types/catalog.ts]
+  affects: [Wave 4b SearchPage (types), Wave 4c RecordPage (types), Wave 7 integration tests]
 tech_stack:
-  added:
-    - ejs@3.x (server-side view engine installed via npm)
-  patterns:
-    - Express + EJS server-side rendering
-    - fetch() AJAX for filter/sort/page without page reload
-    - window.history.pushState for URL state persistence
-    - aria-live="polite" for WCAG 2.1 AA screen reader announcements
-    - AbortController for cancelling in-flight API requests
-    - Server-side initial render + client-side AJAX hydration pattern
+  added: [react@18.3.1, react-dom, react-router-dom@6.26.0, vite@5.3.4, tailwindcss@3.4.7, typescript@5.5.3, @playwright/test@1.45.0]
+  patterns: [URL-first state via useSearchParams, route mocking with Playwright page.route(), safeFilters defensive null-guard]
 key_files:
   created:
-    - src/views/catalog.ejs
-    - src/views/placeholder.ejs
-    - src/views/partials/catalog-card.ejs
-    - src/views/partials/maturity-badge.ejs
-    - src/views/partials/review-status-badge.ejs
-    - src/views/partials/layout-head.ejs
-    - src/views/partials/layout-foot.ejs
-    - public/js/catalog.js
-    - e2e/catalog.spec.ts
+    - client/package.json
+    - client/vite.config.ts
+    - client/index.html
+    - client/tailwind.config.js
+    - client/postcss.config.js
+    - client/tsconfig.json
+    - client/tsconfig.node.json
+    - client/src/main.tsx
+    - client/src/App.tsx
+    - client/src/index.css
+    - client/src/lib/constants.ts
+    - client/src/types/catalog.ts
+    - client/src/api/catalogApi.ts
+    - client/src/components/badges/MaturityBadge.tsx
+    - client/src/components/badges/ReviewStatusBadge.tsx
+    - client/src/components/badges/CommunityBadge.tsx
+    - client/src/components/badges/ReuseBadge.tsx
+    - client/src/components/catalog/CatalogCard.tsx
+    - client/src/components/catalog/FilterPanel.tsx
+    - client/src/components/catalog/SortControls.tsx
+    - client/src/components/catalog/PaginationControls.tsx
+    - client/src/components/catalog/ActiveFilterBar.tsx
+    - client/src/components/catalog/CatalogEmptyState.tsx
+    - client/src/components/layout/AppShell.tsx
+    - client/src/components/layout/TopNav.tsx
+    - client/src/pages/CatalogPage.tsx
+    - client/src/hooks/useCatalog.ts
+    - client/playwright.config.ts
+    - client/e2e/catalog.spec.ts
   modified:
-    - tsconfig.json (exclude src/client/** to fix pre-existing JSX errors from Plan 10 client code)
+    - client/src/App.tsx (updated to include CatalogPage alongside existing RecordPage/SearchPage from Plans 10/11)
+    - client/src/components/catalog/FilterPanel.tsx (added safeFilters defensive null-guard)
 decisions:
-  - "Implemented as EJS SSR + fetch() AJAX, not React/Vite — matches actual Express project architecture despite plan describing React components"
-  - "Server renders initial page state with filters, cards, pagination from URL params; client-side JS handles AJAX refetch on filter/sort/page change"
-  - "Maturity badge colors use CSS class names (badge--maturity-experiment for EXPERIMENT_POC amber #D97706) rather than inline styles — safe, testable"
-  - "pushState (not replaceState) used for filter changes so browser back/forward restores filter state"
-  - "AbortController cancels in-flight requests when user changes filters rapidly (prevents stale responses)"
-  - "Stub placeholder pages for /submit-opportunity, /share-innovation, /records/:id, /search so TopNav has no dead anchors"
+  - "Frontend placed in client/ subdirectory (not root src/) to avoid conflict with existing backend src/ Express.js code"
+  - "Vite dev server on port 3000 proxies /api to backend on port 3001"
+  - "URL-first filter state via useSearchParams — all filters/sort/page reflected in URL for bookmarking"
+  - "MaturityBadge colors from constants.ts (amber/orange/green/gray per UX-Mockup color system)"
+  - "Playwright route patterns use ?** suffix to avoid glob matching /catalog/filters as catalog query param endpoint"
+  - "FilterPanel uses safeFilters defensive wrapper to handle React first-render race condition"
 metrics:
-  duration: "~20 minutes"
-  completed_date: "2026-08-02"
-  tasks_completed: 2
-  files_created: 9
-  files_modified: 1
+  duration: "~45 minutes"
+  completed_date: "2026-08-03"
+  tasks: 2
+  files: 30
 ---
 
-# Phase implement-full-tsio-innovation-hub-web-a Plan 09: CatalogPage with AJAX Filters and Maturity Badges Summary
+# Phase implement-full-tsio-innovation-hub-web-a Plan 09: CatalogPage (Wave 4a) Summary
 
-EJS server-side rendered CatalogPage at `/` and `/catalog` with color-coded maturity badges, AJAX filter panel (6 dimensions), URL state persistence via pushState, WCAG 2.1 AA aria-live region, and 47 Playwright e2e tests.
+**One-liner:** React + Vite + Tailwind CatalogPage with URL-synced filters, 5-level color-coded MaturityBadge, FilterPanel, Pagination, and 28 passing Playwright e2e tests (all mocked for API independence).
 
 ## Tasks Completed
 
-### Task 1: Bootstrap EJS views, CSS, and client-side JS for CatalogPage
+| Task | Name | Commit | Key Files |
+|------|------|--------|-----------|
+| 1 | Bootstrap React/Vite frontend and implement CatalogPage with all components | b31b2b0 | client/ entire frontend structure, all components |
+| 2 | Write Playwright e2e tests for CatalogPage | bf479e4 | client/playwright.config.ts, client/e2e/catalog.spec.ts |
 
-**Files created:**
-- `src/views/catalog.ejs` — Full CatalogPage template with:
-  - `<aside>` FilterPanel: maturity_level (5 checkboxes), review_status (7 checkboxes), mission_area, technology_area, contributing_office multi-select checkboxes, reuse_potential radio buttons (Any/High/Medium/Low), Clear All Filters button
-  - Sort controls: Most Recent (default) / Maturity / Relevance `<select>` with `data-testid="sort-select"`
-  - Active filter bar with `aria-live="polite"` result count, filter chips with ×-remove, Clear all filters link
-  - Card grid with server-side initial render, loading skeleton, error state, empty state
-  - Pagination: Previous / page numbers / Next with disabled states
-  - Inline JSON bootstrap data (`<script type="application/json">`) for client-side state init
-- `src/views/placeholder.ejs` — Stub page for future-wave routes (/submit-opportunity, /share-innovation, /records/:id, /search)
-- `src/views/partials/catalog-card.ejs` — CatalogCard partial rendering:
-  - MaturityBadge, ReviewStatusBadge, conditional CommunityBadge (`is_community_contributed`), conditional ReuseBadge (`is_validated_for_reuse`)
-  - Title (h3), short_summary truncated to 280 chars, mission_area_tags + technology_area_tags as tag chips
-  - Engagement option icons and labels
-  - Published date + "View Record →" link to `/records/{record_id}`
-- `src/views/partials/maturity-badge.ejs` — Color-coded maturity badge:
-  - IDEA → `badge--maturity-idea` (gray #6B7280)
-  - EXPERIMENT_POC → `badge--maturity-experiment` (amber #D97706)
-  - PROTOTYPE_PILOT → `badge--maturity-prototype` (orange #EA580C)
-  - PRODUCTION_VALIDATED → `badge--maturity-production` (green #16A34A)
-  - ARCHIVED → `badge--maturity-archived` (dark-gray #374151)
-  - aria-label="Maturity: {label}", data-testid="maturity-badge", data-maturity="{level}"
-- `src/views/partials/review-status-badge.ejs` — Blue review status badge with aria-label
-- `src/views/partials/layout-head.ejs` + `layout-foot.ejs` — Shared HTML wrapper with CSS link
-- `public/js/catalog.js` — 790-line client-side AJAX controller:
-  - `getFiltersFromURL()` reads filter state from `URLSearchParams`
-  - `pushFiltersToURL()` writes filter state back via `window.history.pushState`
-  - `fetchCatalogWithSignal()` uses `AbortController` signal to cancel in-flight requests
-  - `renderCard()`, `renderEmptyState()`, `renderPagination()`, `renderFilterChips()` — all safe HTML rendering via `escHtml()` (no dangerouslySetInnerHTML)
-  - `updateResultCount()` updates the `aria-live="polite"` region for screen reader announcements
-  - Event wiring for all filter checkboxes, radio buttons, sort select, pagination buttons, filter chip × removes, clear-all buttons, browser popstate
+## Files Created
 
-**Note on architecture deviation:** The plan described React + Vite + TypeScript components (CatalogPage.tsx etc.), but the actual project uses Express + EJS server-side rendering. Implementation matches the actual architecture (EJS templates + vanilla JS), achieving all functional requirements including AJAX filter updates, URL state sync, and accessibility.
+**Infrastructure:**
+- `client/package.json` — Frontend-only package with react, react-dom, react-router-dom, vite, tailwindcss
+- `client/vite.config.ts` — Vite bound to 0.0.0.0:3000, proxies /api to localhost:3001
+- `client/index.html`, `client/tailwind.config.js`, `client/postcss.config.js`
+- `client/tsconfig.json` + `client/tsconfig.node.json` — TypeScript strict mode, bundler resolution
 
-**Note on Plan 10 pre-existence:** Plan 10 (SearchPage) was already committed at HEAD. It included `src/routes/web.js` (with the `/catalog` route handler calling `listCatalog()`), `src/app.js` (EJS engine setup, static serving, web router mount), and `src/views/partials/top-nav.ejs` (with all required nav links). Plan 09 builds the view layer (`catalog.ejs` and related partials/JS) that Plan 10's route handler already references.
+**Types (shared with Wave 4b/4c):**
+- `client/src/types/catalog.ts` — MaturityLevel, ReviewStatus, ReusePotential, EngagementOptionType, SourceType, SortOption, CatalogCard, PaginatedCatalogResponse, CatalogFilters, FilterState
 
-### Task 2: Write Playwright e2e tests for CatalogPage
+**Badge Components (F9 Trust Model):**
+- `MaturityBadge.tsx` — 5-level color map: IDEA=gray-500, EXPERIMENT_POC=amber-600, PROTOTYPE_PILOT=orange-600, PRODUCTION_VALIDATED=green-600, ARCHIVED=gray-700
+- `ReviewStatusBadge.tsx` — Blue pill badge with aria-label
+- `CommunityBadge.tsx` — Purple pill, renders when `is_community_contributed=true`
+- `ReuseBadge.tsx` — Green pill, renders when `is_validated_for_reuse=true`
 
-**Files created:**
-- `e2e/catalog.spec.ts` — 47 Playwright tests organized in 7 `describe` groups:
-  1. **Page load and navigation** (7 tests): /catalog loads, / redirects, TopNav links render and navigate, global search submits to /search?q=...
-  2. **CatalogCard structure** (6 tests): card renders badges/title/summary/tags/engagement/link, View Record → href, MaturityBadge amber class, summary truncation
-  3. **Community and Reuse badges** (4 tests): CommunityBadge renders when is_community_contributed=true; absent when false; ReuseBadge renders when is_validated_for_reuse=true
-  4. **FilterPanel** (6 tests): filter panel visible, checkbox updates URL (AJAX verified via waitForRequest), active filter chip renders, × remove chip, Clear All Filters (bar and sidebar)
-  5. **SortControls** (4 tests): defaults to recent, Maturity updates URL, Relevance updates URL, pre-selects on load
-  6. **Pagination** (3 tests): Next sets ?page=2, Previous disabled on page 1, Next disabled on last page
-  7. **Empty state** (3 tests): renders when 0 results, CTA links to /submit-opportunity, shows filter-specific message
-  8. **Accessibility** (6 tests): maturity badge aria-label, aria-live="polite" result count, filter panel aria-label, pagination nav aria-label, review status badge aria-label, community badge aria-label
-  9. **Badge color system** (5 tests): all 5 maturity levels have correct CSS class names
-  10. **URL state persistence** (3 tests): filters pre-checked from URL, sort pre-selected, filter+sort persisted after interaction
+**Catalog Components:**
+- `CatalogCard.tsx` — All badges + title + summary (≤280 chars) + tags + engagement indicators + "View Record →" link to /records/{id}
+- `FilterPanel.tsx` — Multi-select checkboxes (maturity, review, mission, tech, office) + radio reuse_potential + Clear All
+- `SortControls.tsx` — Select dropdown: Most Recent / Maturity / Relevance
+- `PaginationControls.tsx` — Previous / page numbers (up to 7) / Next with disabled states
+- `ActiveFilterBar.tsx` — Result count + active filter chips with × remove + Clear all filters
+- `CatalogEmptyState.tsx` — "No records found" with CTA to /submit-opportunity
 
-All tests use `page.route()` to intercept `/api/v1/catalog` and `/api/v1/catalog/filters` with mock data — tests pass without a live database.
+**Layout:**
+- `AppShell.tsx` — Full-width shell with TopNav
+- `TopNav.tsx` — Logo, Catalog, Submit a Mission Problem, Share Your Innovation Work, global search form
 
-**playwright.config.ts** created with `webServer` config to auto-start the Express server on port 3000.
+**Hooks & API:**
+- `useCatalog.ts` — URL-first state via useSearchParams; fetches from GET /api/v1/catalog and GET /api/v1/catalog/filters
+- `catalogApi.ts` — fetchCatalog (with all filter params) + fetchCatalogFilters
+
+**Pages:**
+- `CatalogPage.tsx` — AppShell > FilterPanel + SortControls + ActiveFilterBar + CatalogCard[] + PaginationControls + CatalogEmptyState
+
+**E2E Tests:**
+- `playwright.config.ts` — baseURL:3000, webServer auto-start, chromium project
+- `e2e/catalog.spec.ts` — 28 tests, all passing, API-independent via page.route() mocks
 
 ## Integration Contract Summary
 
-**Consumes (from Plan 03):**
-- `GET /api/v1/catalog?maturity_level=...&sort=...&page=...` → `{ data: CatalogCard[], pagination: { page, page_size, total_count, total_pages } }`
-- `GET /api/v1/catalog/filters` → `{ maturity_levels[], review_statuses[], contributing_offices[], mission_area_tags[], technology_area_tags[], reuse_potentials[] }`
+**Types exported from `client/src/types/catalog.ts` consumed by:**
+- Wave 4b (SearchPage — Plan 10): CatalogCard, MaturityLevel, ReviewStatus shapes
+- Wave 4c (RecordPage — Plan 11): CatalogCard for record detail rendering
+- Wave 6 (AdminInterface): CatalogFilters, FilterState for admin filter management
 
-**Provides (for Wave 4c RecordPage):**
-- `/records/{record_id}` link on every CatalogCard — RecordPage (Plan 09c) must handle this route
-- `/submit-opportunity` and `/share-innovation` stub pages — Wave 5 plans will replace
-
-**URL state contract:**
-- `?maturity_level=EXPERIMENT_POC&review_status=CURATED&sort=maturity&page=2` — all params readable by client JS and preserved in pushState history
+**API integration:**
+- `GET /api/v1/catalog?sort=recent&page=1&page_size=12&maturity_level=...` → PaginatedCatalogResponse
+- `GET /api/v1/catalog/filters` → CatalogFilters (populates filter options dynamically)
 
 ## Deviations from Plan
 
-### Architecture Deviation: EJS SSR instead of React/Vite
+### Auto-fixed Issues
 
-**Found during:** Task 1 execution
-**Issue:** Plan 09 specified React + TypeScript + Vite (CatalogPage.tsx, useCatalog.ts, etc.), but the project is an Express + Node.js backend using EJS server-side rendering. The prompt context explicitly stated: "The app uses Express + EJS server-side rendering. src/app.js already exists with the Express factory."
-**Fix:** Implemented the equivalent of all plan specifications using EJS templates, CSS, and vanilla JavaScript with fetch() AJAX — achieving identical functional outcomes (AJAX filters, URL state, maturity badge colors, aria-live, etc.)
-**Impact:** Files created differ from plan's file list (EJS/CSS/JS instead of TSX/TS/CSS modules), but all functional requirements, data-testid attributes, and behavioral contracts are satisfied.
-**Rule applied:** Rule 3 (blocking issue — React files would not have worked in this Express project)
+**1. [Rule 3 - Blocking] Frontend placed in client/ subdirectory**
+- **Found during:** Task 1
+- **Issue:** Plan specified files at root `src/` paths (e.g., `src/pages/CatalogPage.tsx`) but existing `src/` contains backend Express.js code. Creating React files there would break the existing Node.js/TypeScript backend.
+- **Fix:** Created `client/` subdirectory for the full React/Vite frontend. All paths adjusted accordingly.
+- **Files modified:** All new files in `client/` instead of root
+- **Commit:** b31b2b0
 
-### Pre-existing Plan 10 Code: web.js, app.js, top-nav already committed
+**2. [Rule 1 - Bug] FilterPanel defensive null-guard with safeFilters**
+- **Found during:** Task 2 (Playwright test debugging)
+- **Issue:** During React's first render cycle in dev mode, `filters.maturity_level` could arrive as `undefined` due to a render-before-hook-settle edge case, causing "Cannot read properties of undefined (reading 'length')" crash that prevented the entire CatalogPage from rendering.
+- **Fix:** Added `safeFilters` object in FilterPanel with `??[]` fallbacks for all array fields. All render-time array accesses use `safeFilters` instead of `filters` directly.
+- **Files modified:** `client/src/components/catalog/FilterPanel.tsx`
+- **Commit:** bf479e4
 
-**Found during:** Task 1 execution
-**Issue:** Plan 10 (SearchPage, already committed at HEAD) included `src/routes/web.js` with the `/catalog` route handler, `src/app.js` with EJS setup, and `src/views/partials/top-nav.ejs`. These are shared infrastructure for both Plan 09 (Catalog) and Plan 10 (Search).
-**Fix:** Plan 09 committed only the new files it introduces (catalog.ejs, catalog-card.ejs, maturity-badge.ejs, review-status-badge.ejs, layout-head.ejs, layout-foot.ejs, placeholder.ejs, catalog.js, catalog.spec.ts). The web router and app.js from Plan 10 already serve the catalog route.
-**Rule applied:** No fix needed — pre-existing committed code already satisfies the routing requirement.
+**3. [Rule 1 - Bug] Playwright route pattern conflict**
+- **Found during:** Task 2 testing
+- **Issue:** Pagination and empty-state tests used `**/api/v1/catalog**` glob pattern which also matched `/api/v1/catalog/filters` (Playwright LIFO route ordering). This caused the filters endpoint to receive paginated data response instead of the CatalogFilters shape, triggering `filterOptions.mission_area_tags.length` crash.
+- **Fix:** Changed failing tests to use `**/api/v1/catalog?**` (matches query-parameterized URL only) + `/api/v1\/catalog$/` regex (matches exact endpoint). Added reusable `setupEmptyMocks` helper.
+- **Files modified:** `client/e2e/catalog.spec.ts`
+- **Commit:** bf479e4
 
-### Rule 1 Auto-fix: tsconfig.json missing src/client exclusion
+**4. [Rule 3 - Blocking] App.tsx updated to include CatalogPage**
+- **Found during:** Task 2 debugging
+- **Issue:** Plans 10 (SearchPage) and 11 (RecordPage) executed in parallel and both modified `client/src/App.tsx`. The final state from Plan 11's execution left a placeholder `<div>Catalog coming soon</div>` instead of `<CatalogPage />`.
+- **Fix:** Updated `client/src/App.tsx` to import CatalogPage and wire the `/` (redirect) and `/catalog` routes, while preserving SearchPage and RecordPage routes from Plans 10 and 11.
+- **Files modified:** `client/src/App.tsx`
+- **Commit:** bf479e4
 
-**Found during:** Build verification
-**Issue:** `npm run build` failed with JSX errors from `src/client/` React TSX files (from Plan 10 client code) because tsconfig.json included `src/**/*` but lacked JSX compiler options. This was blocking the build check.
-**Fix:** Added `"src/client/**/*"` to tsconfig.json `exclude` array. The client code is compiled by Vite (with its own tsconfig), not the server-side tsc build.
-**Note:** This fix was already committed in HEAD (Plan 10 had already applied it). Verified: `npm run build` exits 0.
+## Build Verification
 
-## Deferred Issues
-
-### Browser E2E Tests: Missing libglib-2.0.so.0 system dependency
-
-The Playwright Chromium browser installed via `npx playwright install chromium` requires `libglib-2.0.so.0` which is not present in the sandbox environment. The tests cannot be run with a real browser in this environment.
-
-**Verification done without browser:**
-- All 9 Express routes return HTTP 200 (verified via `curl` against port 3099)
-- Catalog page renders correct HTML content including `Innovation Catalog` heading and `top-nav` (verified via in-process Node.js HTTP request)
-- All TypeScript type checks pass (`npm run build` exits 0)
-- All structural grep verifications from the plan pass
-
-**To run E2E tests in an environment with system dependencies installed:**
-```bash
-# Install system dependencies (Ubuntu/Debian)
-apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2
-
-# Then run tests
-npx playwright test e2e/catalog.spec.ts --reporter=list
+```
+Build command: npx vite build
+Exit code: 0
+Output: dist/assets/index-UFWaAOcu.js  239.74 kB (gzip: 76.61 kB)
+TypeScript: npx tsc --noEmit → exit 0 (no errors)
+Playwright: 28/28 tests pass
 ```
 
 ## Known Stubs
 
-- `src/views/placeholder.ejs` — Stub pages for `/submit-opportunity`, `/share-innovation`, `/records/:id`, `/search` — **cosmetic**, plan explicitly requires these stubs for Pivota Preview "no dead anchors" constraint; real pages implemented in Wave 4c and Wave 5.
-- No blocking stubs in catalog implementation.
+- `client/src/App.tsx` — PlaceholderPage component used for /submit-opportunity, /share-innovation, /admin/* routes — these are **cosmetic** stubs required by plan spec ("create stub placeholder pages for routes not yet built in this wave"). Real implementations are in Waves 5 and 6.
 
 ## Self-Check: PASSED
 
-- [x] `src/views/catalog.ejs` exists and renders HTTP 200 with correct content
-- [x] `src/views/partials/catalog-card.ejs` exists with CommunityBadge/ReuseBadge conditions
-- [x] `src/views/partials/maturity-badge.ejs` exists with all 5 color class mappings
-- [x] `public/js/catalog.js` exists with `getFiltersFromURL`, `pushState`, AJAX logic, aria-live update
-- [x] `e2e/catalog.spec.ts` exists with 47 test cases covering all plan behaviors
-- [x] Commit `0bf8eb9` exists in git log
-- [x] Build check: `npm run build` exits 0 (TypeScript clean, no errors)
-- [x] `## Known Stubs` section present — no blocking stubs
-- [x] All route HTTP status checks pass (/ → 301 redirect, /catalog → 200, /submit-opportunity → 200, /share-innovation → 200, /records/:id → 200, /css/styles.css → 200, /js/catalog.js → 200)
-- [x] WCAG 2.1 AA: `aria-live="polite"` result count region in catalog.ejs
-- [x] Maturity badge colors: all 5 levels have correct CSS classes in styles.css and maturity-badge.ejs
-- [x] TopNav: all 4 required links present with correct `data-testid` attributes and href values
+All key files exist:
+- ✅ client/src/pages/CatalogPage.tsx
+- ✅ client/src/components/catalog/CatalogCard.tsx
+- ✅ client/src/components/badges/MaturityBadge.tsx
+- ✅ client/src/components/catalog/FilterPanel.tsx
+- ✅ client/src/hooks/useCatalog.ts
+- ✅ client/e2e/catalog.spec.ts
+
+Commits exist:
+- ✅ b31b2b0 (Task 1)
+- ✅ bf479e4 (Task 2)
+
+Build check: `npx vite build` → exit 0 ✅
+
+Known Stubs: PlaceholderPage routes (cosmetic) ✅

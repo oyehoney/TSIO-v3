@@ -1,5 +1,4 @@
 'use strict';
-// src/services/CaptchaService.js
 const axios = require('axios');
 const { getSettingValue } = require('./SettingsRepository');
 
@@ -8,17 +7,15 @@ const HCAPTCHA_VERIFY_URL = 'https://hcaptcha.com/siteverify';
 
 /**
  * Validate a CAPTCHA token from a public form submission.
- *
- * Bypass logic: reads captcha_enabled from hub_settings at call time.
- * If captcha_enabled === 'false', bypass entirely and return { valid: true }.
- * This supports federal network environments where outbound CAPTCHA provider
- * calls may be blocked (TechArch §5.3, §7.5).
+ * Reads captcha_enabled from hub_settings at call time (not cached).
+ * If captcha_enabled='false', bypass validation entirely — supports federal
+ * network environments where outbound CAPTCHA provider calls may be blocked.
  *
  * @param {string} token - The captcha_token from the request body
  * @returns {Promise<{ valid: boolean, error?: string }>}
  */
 async function validate(token) {
-  // Step 1: Check hub_settings for captcha_enabled bypass (read at call time, not cached)
+  // Step 1: Check hub_settings for captcha_enabled bypass
   let captchaEnabled = true;
   try {
     const setting = await getSettingValue('captcha_enabled');
@@ -27,7 +24,7 @@ async function validate(token) {
     }
   } catch (err) {
     // If hub_settings read fails, proceed with validation (fail-open is safer
-    // than blocking all submissions on a transient DB read issue).
+    // than blocking all submissions if DB has a transient read issue).
     // Log but do not throw.
   }
 
@@ -61,7 +58,7 @@ async function validate(token) {
     });
 
     // reCAPTCHA v3: { success: true, score: 0.9, ... }
-    // hCaptcha: { success: true, ... }
+    // hCaptcha:    { success: true, ... }
     if (response.data && response.data.success === true) {
       return { valid: true };
     }

@@ -33,13 +33,14 @@ function getDb() {
  */
 async function createTestCurator(db, emailSuffix = '') {
   const email = `test-curator${emailSuffix}@ao.uscourts.gov`;
-  const [user] = await db.raw(`
+  // db.raw() returns { rows: [...], rowCount, ... } — not directly iterable
+  const result = await db.raw(`
     INSERT INTO users (email, display_name, role)
     VALUES (?, 'Test Curator', 'CURATOR')
     ON CONFLICT (email) DO UPDATE SET display_name = EXCLUDED.display_name
     RETURNING user_id
   `, [email]);
-  return user.rows[0].user_id;
+  return result.rows[0].user_id;
 }
 
 /**

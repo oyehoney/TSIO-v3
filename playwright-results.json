@@ -1,0 +1,3590 @@
+{
+  "config": {
+    "argv": [
+      "/usr/local/bin/node",
+      "/home/daytona/project/node_modules/.bin/playwright",
+      "test",
+      "e2e/uat/implement-full-tsio-innovation-hub-web-a.spec.ts",
+      "--config=playwright-uat.config.ts"
+    ],
+    "configFile": "/home/daytona/project/playwright-uat.config.ts",
+    "rootDir": "/home/daytona/project/e2e/uat",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/daytona/project/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/home/daytona/project/e2e/uat",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json",
+        {
+          "outputFile": "playwright-results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+      "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "US-0.1: Browse Published Innovation Records",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 24,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/ redirects to /catalog",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 208,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:03.725Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-20eeec420659238eb7ee",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "/catalog renders the Innovation Catalog page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 203,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:03.997Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ba43c26f58271d5558c6",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "catalog grid renders at least one card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 213,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:04.205Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ce5ee3368ad7d3e21632",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "catalog card displays the seeded record title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:04.422Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-844710dd380f0dbefdfc",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 42,
+              "column": 7
+            },
+            {
+              "title": "catalog card has maturity badge",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:04.621Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-e0cd8bdf701104e36fef",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "catalog card has review status badge",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 280,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:04.821Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-80fb7bc54a3b8d3af755",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 55,
+              "column": 7
+            },
+            {
+              "title": "catalog card shows tags section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:05.105Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-022e8d860b84f1d09f5d",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 62,
+              "column": 7
+            },
+            {
+              "title": "catalog card shows engagement indicators",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 199,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:05.304Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-57a4ccd53da6ef4c79e3",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 70,
+              "column": 7
+            },
+            {
+              "title": "sort control defaults to Most Recent",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 192,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:05.508Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7b1ce2b03408c5bf7638",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "user can switch sort to Maturity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:05.706Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-d433c84646699d3700d6",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 83,
+              "column": 7
+            },
+            {
+              "title": "catalog card has a View Record link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 212,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:05.905Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-05d8828f07db853f4611",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 90,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-0.2: Filter Catalog by Metadata",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 101,
+          "column": 6,
+          "specs": [
+            {
+              "title": "filter panel is visible on catalog page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:06.121Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ab2c1ac942059486b89d",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 102,
+              "column": 7
+            },
+            {
+              "title": "filter panel contains Maturity Level checkboxes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 197,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:06.304Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-b8786b885a25639a6278",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 108,
+              "column": 7
+            },
+            {
+              "title": "filter panel contains Review Status checkboxes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 178,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:06.505Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-4f78711b965d40f51326",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 114,
+              "column": 7
+            },
+            {
+              "title": "filter panel contains Reuse Potential radio buttons",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:06.688Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7edfc938d39b6a5feb4c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 120,
+              "column": 7
+            },
+            {
+              "title": "applying a maturity filter re-renders catalog without error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 213,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:06.871Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-fc0d3a3c4c4ee2ade033",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 126,
+              "column": 7
+            },
+            {
+              "title": "Clear All Filters button is present",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 181,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:07.088Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-94a4eacbdaddce731656",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 135,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-0.3: Identify Community and Reuse-Validated Records",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 145,
+          "column": 6,
+          "specs": [
+            {
+              "title": "maturity badge present on every catalog card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 211,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:07.273Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-88f7a249fa5812f6f8c3",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 146,
+              "column": 7
+            },
+            {
+              "title": "review status badge present on every catalog card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:07.488Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7f356972ae026f1635bc",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 157,
+              "column": 7
+            },
+            {
+              "title": "engagement options are shown on the seeded catalog card",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 161,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:07.654Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-efc92e434c34e415914a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 168,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-1.1: Search by Mission Problem",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 179,
+          "column": 6,
+          "specs": [
+            {
+              "title": "global search input is accessible in the navigation bar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:07.821Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-b1759bb4c0175f33ef2e",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 180,
+              "column": 7
+            },
+            {
+              "title": "/search route is reachable and renders the search page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 157,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:08.021Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7bc50f296a7a5d2b5b1a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 186,
+              "column": 7
+            },
+            {
+              "title": "search page echoes query term in header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:08.182Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-27438b2668375d3e029c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 193,
+              "column": 7
+            },
+            {
+              "title": "/search?q=... URL structure works and page loads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 145,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:08.332Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-93b6ccddb3dc468b480c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 199,
+              "column": 7
+            },
+            {
+              "title": "typing in global search and submitting navigates to /search",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 229,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:08.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-10a207ba178ee00e630d",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 206,
+              "column": 7
+            },
+            {
+              "title": "search page shows loading/result/error state after query (API present)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 645,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:08.716Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-b28a2510719ded622626",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 214,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-1.2: Filter Search Results",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 227,
+          "column": 6,
+          "specs": [
+            {
+              "title": "search filter panel renders when query is non-empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 613,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:09.365Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-521bc151f2bc277ec985",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 228,
+              "column": 7
+            },
+            {
+              "title": "active filter chips render when maturity_level filter is in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 663,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:09.981Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-831b24c095606969a3db",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 237,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-1.3: No Results Guidance",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 249,
+          "column": 6,
+          "specs": [
+            {
+              "title": "blank search page shows prompt to enter a search term",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 109,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:10.648Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-965ae6b40017a3f5775d",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 250,
+              "column": 7
+            },
+            {
+              "title": "SearchEmptyState component has CTA markup linking to submit-opportunity",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 587,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:10.761Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-0b2639b10ece6214fdaa",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 255,
+              "column": 7
+            },
+            {
+              "title": "/search page has correct heading when query present",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 125,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:11.352Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-4053665dbdc34add5dee",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 266,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-2.1: View a Full Innovation Record",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 275,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/records/:id renders the record page for the seeded record",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 229,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:11.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-72e773deb349b08e7fe1",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 276,
+              "column": 7
+            },
+            {
+              "title": "record page shows breadcrumb link back to catalog",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:11.714Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7a7557446a11a992efa2",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 282,
+              "column": 7
+            },
+            {
+              "title": "record page shows maturity badge with color",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:11.913Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-58a49ada749a1fa81e66",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 288,
+              "column": 7
+            },
+            {
+              "title": "record page shows review status badge",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:12.096Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-72cfabed6fe63d737f67",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 296,
+              "column": 7
+            },
+            {
+              "title": "record page shows MISSION PROBLEM section heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:12.279Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-03e20414a60b33dfd207",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 302,
+              "column": 7
+            },
+            {
+              "title": "record page shows OUTCOME SUMMARY section heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:12.480Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-77f01a0c7640ecbf99b1",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 308,
+              "column": 7
+            },
+            {
+              "title": "record page shows Trust & Limitations section",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 163,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:12.646Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ea96efa6c67815689b2c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 314,
+              "column": 7
+            },
+            {
+              "title": "trust section appears before the Next Actions panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:12.813Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-62aa4119f4303a912491",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 321,
+              "column": 7
+            },
+            {
+              "title": "perspective toggle is visible on record page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 180,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.013Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-a64aebb187f646d0f94f",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 331,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-3.1: Executive Perspective",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 341,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Executive View tab is visible on record page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 195,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.197Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-c2d8a73e33500297290c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 342,
+              "column": 7
+            },
+            {
+              "title": "Executive View tab is selected by default",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.396Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-dff0d1bc5654607ee2f8",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 349,
+              "column": 7
+            },
+            {
+              "title": "executive panel shows MISSION PROBLEM content by default",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.580Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-4f2209ded734effa21d5",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 356,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-3.2: Technical Perspective",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 369,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Technical View tab is visible on record page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 163,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.763Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-6ade770f02876bf2b34e",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 370,
+              "column": 7
+            },
+            {
+              "title": "clicking Technical View shows technical panel with TECHNICAL DETAILS heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 200,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:13.929Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-6e98e9048114bc445f3a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 377,
+              "column": 7
+            },
+            {
+              "title": "?view=technical URL parameter activates technical panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 177,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.133Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-32a5d3866b5e8208bf16",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 387,
+              "column": 7
+            },
+            {
+              "title": "switching from technical back to executive works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.314Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-5ffb0a7f2719a4d70a41",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 395,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-5.1: Submit a Mission Problem",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 407,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/submit-opportunity page is accessible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 149,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.514Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-64afd3c322a130d5af0b",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 408,
+              "column": 7
+            },
+            {
+              "title": "submit-opportunity page is reachable from top nav",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 165,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.667Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ef72e2add78c51a89801",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 413,
+              "column": 7
+            },
+            {
+              "title": "form has problem description textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 143,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-4c6f7ae35e1d22092796",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 419,
+              "column": 7
+            },
+            {
+              "title": "form has mission area select",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 129,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:14.984Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-130de0ad3328e6482c8b",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 424,
+              "column": 7
+            },
+            {
+              "title": "form has submitting office input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 145,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.118Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-08580200f456f50a16c3",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 429,
+              "column": 7
+            },
+            {
+              "title": "form has submitter name input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 130,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.267Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-19bde97503207935c3af",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 434,
+              "column": 7
+            },
+            {
+              "title": "form has submitter email input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.400Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-cf18e832e5bd09146b77",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 439,
+              "column": 7
+            },
+            {
+              "title": "form shows governance notice with \"does not imply acceptance\" text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 128,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.550Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ce2f38e45184bded12f4",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 444,
+              "column": 7
+            },
+            {
+              "title": "submit button is present on the form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 147,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.684Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-6fe86007d1d0b71bc3da",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 450,
+              "column": 7
+            },
+            {
+              "title": "form validation shows error when required fields are blank on submit",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 177,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:15.835Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-3e6c96ceccf233909764",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 455,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-5.2: Confirmation After Submitting Opportunity",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 466,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/submit-opportunity/confirmation page renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.016Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-2e2429b8c6717d14daaa",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 467,
+              "column": 7
+            },
+            {
+              "title": "confirmation page contains \"does not imply acceptance\" language",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 111,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.166Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-b0f66b6c0fed1ff17e77",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 472,
+              "column": 7
+            },
+            {
+              "title": "confirmation page has Return to Innovation Catalog link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 130,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.282Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-d991dfa466230760a3fd",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 477,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-6.1: Submit Existing Innovation Work",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 488,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/share-innovation page is accessible",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 147,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.416Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-acd7e4905f73145b558a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 489,
+              "column": 7
+            },
+            {
+              "title": "share-innovation page is reachable from top nav",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 180,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.567Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-bdfa1d406e879873f3f8",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 494,
+              "column": 7
+            },
+            {
+              "title": "form has problem_addressed textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 128,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.751Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-8492dbae6251dff2e17c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 500,
+              "column": 7
+            },
+            {
+              "title": "form has work_description textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:16.882Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-65d49dc6958492225a9d",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 505,
+              "column": 7
+            },
+            {
+              "title": "form has outcome_summary textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.033Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-268d54413a6c1e877b79",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 510,
+              "column": 7
+            },
+            {
+              "title": "form has self_assessed_maturity radio group",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.184Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-11453afe1e165d2114c7",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 515,
+              "column": 7
+            },
+            {
+              "title": "ARCHIVED is not a self_assessed_maturity option",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.350Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-b4be7c412dade887517c",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 521,
+              "column": 7
+            },
+            {
+              "title": "form has contributing_team input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.500Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-ad4d91b301f189c747b6",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 527,
+              "column": 7
+            },
+            {
+              "title": "form has contact_email input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 129,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.650Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-fba49cf598a7764ede08",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 532,
+              "column": 7
+            },
+            {
+              "title": "form shows curation review governance notice",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.783Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-06c8faa6f4db7d5b925e",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 537,
+              "column": 7
+            },
+            {
+              "title": "submit button is present on the share innovation form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 128,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:17.950Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-8457cdce10060f80a605",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 543,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-6.2: Confirmation After Sharing Innovation",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 552,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/share-innovation/confirmation page renders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 161,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.084Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-e680e387d3d4d1821e84",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 553,
+              "column": 7
+            },
+            {
+              "title": "confirmation page describes curation process steps",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 129,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.249Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-f62d79c37cf5bb94071a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 558,
+              "column": 7
+            },
+            {
+              "title": "confirmation page states publication is not guaranteed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.382Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-50f31e439f55391b1db4",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 563,
+              "column": 7
+            },
+            {
+              "title": "confirmation page has Return to Innovation Catalog link",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.532Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-6550e692cea8757cc47a",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 568,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-7.1: Request Demo/Briefing from Record Page",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 578,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Next Actions panel is visible on record page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 176,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.682Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-38ce77090945c7398fe0",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 579,
+              "column": 7
+            },
+            {
+              "title": "engagement button is present in Next Actions panel",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 146,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:18.862Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-f3d5b2a291564c316be3",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 585,
+              "column": 7
+            },
+            {
+              "title": "clicking an engagement button opens the engagement modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 212,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:19.013Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-4518d47bbdca5931fa57",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 592,
+              "column": 7
+            },
+            {
+              "title": "engagement modal has requestorName input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:19.229Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-bcbb1fc7938042474438",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 600,
+              "column": 7
+            },
+            {
+              "title": "engagement modal has requestorOffice input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:19.430Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-1ea139238ff7ea5af7a7",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 607,
+              "column": 7
+            },
+            {
+              "title": "engagement modal has requestorEmail input",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 196,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:19.629Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-60512de3bec05e5523bc",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 614,
+              "column": 7
+            },
+            {
+              "title": "engagement modal has descriptionOfInterest textarea",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 213,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:19.829Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-d44f1e52a7e4b83b46b8",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 621,
+              "column": 7
+            },
+            {
+              "title": "engagement modal has a Close button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 197,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:20.046Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-61adcfc436a218abcba7",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 628,
+              "column": 7
+            },
+            {
+              "title": "pressing Escape closes the engagement modal",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 192,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:20.246Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-65c63940f12635e5535f",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 635,
+              "column": 7
+            },
+            {
+              "title": "engagement modal pre-populates record title reference",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 183,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:20.442Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-1d907370f4a0837d2dff",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 644,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-8.1: Access Curator Admin Interface",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 656,
+          "column": 6,
+          "specs": [
+            {
+              "title": "/admin redirects unauthenticated user to /admin/login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 666,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:20.629Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-833ff76c96b6aaeea3ed",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 657,
+              "column": 7
+            },
+            {
+              "title": "/admin/login shows TSIO Innovation Hub branding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 142,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:21.299Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-a1aff23142f50e84e8b2",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 670,
+              "column": 7
+            },
+            {
+              "title": "/admin/login shows Sign in with Microsoft button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 129,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:21.445Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-bd1229932e4e023cc6a5",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 675,
+              "column": 7
+            },
+            {
+              "title": "/admin/login shows Administration Interface subtitle",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 149,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:21.578Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-cadece0a06ce9c392b99",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 680,
+              "column": 7
+            },
+            {
+              "title": "/admin/login?error=access_denied shows access denied message",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 144,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:21.731Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-401985b78f6e54e92b73",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 685,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-9.1: Trust Signals on Every Catalog Card",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 694,
+          "column": 6,
+          "specs": [
+            {
+              "title": "maturity badge has a data-maturity attribute for color coding",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 202,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:21.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-e5a4190f689a47852872",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 695,
+              "column": 7
+            },
+            {
+              "title": "seeded record maturity badge shows PROTOTYPE_PILOT",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 163,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.087Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-665db006996f0128c4cb",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 704,
+              "column": 7
+            },
+            {
+              "title": "seeded record review status badge shows TECHNICALLY_REVIEWED",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 162,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.254Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-61123fac7c0401b3b789",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 712,
+              "column": 7
+            },
+            {
+              "title": "maturity badge has accessible aria-label",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 197,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.419Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-cef45969c8bc0f02d5cf",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 720,
+              "column": 7
+            },
+            {
+              "title": "review status badge has accessible aria-label",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.621Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-7285c94172c9706b0fde",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 728,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "US-9.2: Trust Disclaimers on Published Records",
+          "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+          "line": 740,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Trust & Limitations section is present on record page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 171,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.804Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-33f5e756cf342cb42ab8",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 741,
+              "column": 7
+            },
+            {
+              "title": "Trust & Limitations section has TRUST & LIMITATIONS heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 181,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:22.979Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-0fdc5be1da933bae28d9",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 748,
+              "column": 7
+            },
+            {
+              "title": "Trust & Limitations section contains at least one disclaimer item",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 161,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:23.164Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-05b7b092be0e9f869801",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 754,
+              "column": 7
+            },
+            {
+              "title": "trust section is positioned before the Next Actions panel in the DOM",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 180,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-04T17:36:23.329Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e1dbb8a9067fb228d800-14f52de05aa06f31400b",
+              "file": "implement-full-tsio-innovation-hub-web-a.spec.ts",
+              "line": 762,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-04T17:36:03.494Z",
+    "duration": 20050.04,
+    "expected": 99,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

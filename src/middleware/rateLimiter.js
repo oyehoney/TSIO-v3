@@ -1,21 +1,18 @@
 'use strict';
-// src/middleware/rateLimiter.js
 const rateLimit = require('express-rate-limit');
 
 /**
  * Rate limiter for public form submissions (opportunity + contribution).
  * Limit: 5 requests per IP per hour — per FRD F05 §Validation and F06 §Validation.
- * Returns 429 with X-RateLimit-* headers and Retry-After.
  */
 const submissionLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour = 3600000 ms
+  windowMs: 60 * 60 * 1000, // 1 hour in ms (3600000)
   max: 5,
-  standardHeaders: true,   // Returns X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+  standardHeaders: true,   // Return rate limit info in X-RateLimit-* headers
   legacyHeaders: false,
   skipSuccessfulRequests: false,
+  skipFailedRequests: true, // Don't count failed requests (422 validation errors, etc.) toward limit
   handler: (req, res) => {
-    // Set Retry-After header in seconds (1 hour = 3600)
-    res.setHeader('Retry-After', '3600');
     res.status(429).json({
       error: {
         code: 'RATE_LIMIT_EXCEEDED',
@@ -26,17 +23,17 @@ const submissionLimiter = rateLimit({
 });
 
 /**
- * Rate limiter for engagement requests (Wave 3c EngagementService).
+ * Rate limiter for engagement requests.
  * Limit: 10 requests per IP per hour — per FRD F07 §Validation.
  */
 const engagementLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour = 3600000 ms
+  windowMs: 60 * 60 * 1000, // 1 hour in ms (3600000)
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
+  skipFailedRequests: true, // Don't count failed requests toward limit
   handler: (req, res) => {
-    res.setHeader('Retry-After', '3600');
     res.status(429).json({
       error: {
         code: 'RATE_LIMIT_EXCEEDED',

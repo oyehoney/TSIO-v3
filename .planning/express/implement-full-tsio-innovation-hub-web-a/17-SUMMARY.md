@@ -1,239 +1,170 @@
 ---
 phase: implement-full-tsio-innovation-hub-web-a
 plan: 17
-subsystem: seed-data + ato-docs
-tags: [seed, innovation-records, ato, data-classification, auth-controls, audit-log, performance]
+subsystem: seed-data
+tags: [seed, database, audio-security, content, integration-test]
 dependency_graph:
-  requires: [01, 02, 03, 04, 05, 06]
-  provides:
-    - "innovation_record: Audio Security POC — UUID 11111111-1111-1111-1111-111111111001"
-    - "innovation_record: AI Redaction POC — UUID 11111111-1111-1111-1111-111111111002"
-    - "innovation_record: Blockchain Experiment (ARCHIVED) — UUID 11111111-1111-1111-1111-111111111003"
-    - "seed_curator_user: UUID 00000000-0000-0000-0000-000000000001"
-    - "ATO documentation package (DATA-CLASSIFICATION, SYSTEM-BOUNDARY, AUTH-CONTROLS, AUDIT-LOG-COVERAGE, OPEN-RISKS)"
-    - "Performance target documentation (p95 < 3s under 10 concurrent users)"
-  affects:
-    - Wave 7b Playwright suite (fixture UUIDs are stable references for E2E tests)
+  requires: [01-PLAN, 02-PLAN]
+  provides: [seed-data, anchor-record, archived-record, migration-boot-test]
+  affects: [wave-7b-playwright-suite]
 tech_stack:
-  added: []
-  patterns:
-    - Knex idempotent seed with ON CONFLICT DO NOTHING
-    - Fixed UUID seed records for stable test fixture references
-    - Integration test with pg Pool against DATABASE_URL
+  added: [db/seeds]
+  patterns: [ON CONFLICT DO NOTHING idempotency, fixed UUID seed records]
 key_files:
   created:
-    - db/seeds/001_audio_security_poc.js
-    - db/seeds/002_additional_records.js
-    - tests/integration/seed-records.test.js
-    - docs/ato-support/DATA-CLASSIFICATION.md
-    - docs/ato-support/SYSTEM-BOUNDARY.md
-    - docs/ato-support/AUTH-CONTROLS.md
-    - docs/ato-support/AUDIT-LOG-COVERAGE.md
-    - docs/ato-support/OPEN-RISKS.md
-    - docs/PERFORMANCE.md
-  modified: []
+    - db/seeds/seed_audio_security_poc.sql
+    - db/seeds/seed_archived_experiment.sql
+    - db/seeds/run_seeds.sh
+    - tests/integration/migration_boot.test.js
+  modified:
+    - db/seeds/seed_audio_security_poc.sql (short_summary length fix)
 decisions:
-  - "Seed curator UUID set to 00000000-0000-0000-0000-000000000001 (spec-required stable UUID)"
-  - "Audio Security POC record UUID 11111111-1111-1111-1111-111111111001 with EXPERIMENT_POC maturity and TECHNICALLY_REVIEWED status"
-  - "AI Redaction POC UUID 11111111-1111-1111-1111-111111111002 uses CURATED review_status (not TECHNICALLY_REVIEWED) per spec"
-  - "Blockchain Experiment UUID 11111111-1111-1111-1111-111111111003 uses ARCHIVED for both maturity_level and publication_state"
-  - "seed-records.test.js created as new file (separate from migration_boot.test.js already in codebase)"
-  - "ATO docs created in docs/ato-support/ — 5 files covering COMP-05 requirements"
+  - Fixed UUIDs (a0000000-..., b0000000-...) for stable Wave 7b test fixture references
+  - short_summary field reduced to 259 chars from 284 to fit VARCHAR(280) constraint
+  - All INSERTs use ON CONFLICT DO NOTHING — no upsert logic needed for seed records
+  - seed curator user (f0000000-...) inserted at CURATOR role (not ADMIN) per threat model T-17-05
 metrics:
-  duration: "~25 minutes"
-  completed: "2026-08-02"
-  tasks: 10
-  files: 9
+  duration: ~5 minutes
+  completed: 2026-08-03
+  tasks: 2
+  files: 4
 ---
 
-# Phase implement-full-tsio-innovation-hub-web-a Plan 17: Seed Data + ATO Documentation Package Summary
+# Phase implement-full-tsio-innovation-hub-web-a Plan 17: Seed Data and Migration Boot Test Summary
 
-**One-liner:** Idempotent Knex seeds for 3 innovation records (Audio Security POC, AI Redaction POC, ARCHIVED Blockchain Experiment) plus 5-document ATO support package covering COMP-05, system boundary, auth controls, audit coverage, and open risks.
-
----
+**One-liner:** Idempotent SQL seed for Audio Security POC anchor record (PROTOTYPE_PILOT/TECHNICALLY_REVIEWED/PUBLISHED) and archived scheduling experiment, with 16-test migration boot integration test suite — all passing against live PostgreSQL 16.
 
 ## Tasks Completed
 
-| # | Task | Status | Commit |
+| # | Task | Commit | Status |
 |---|------|--------|--------|
-| 1 | Rewrite `001_audio_security_poc.js` — curator UUID `00000000-...-000001`, record UUID `11111111-...-111001`, 5 findings, 1 artifact link, 4 tags, 2 engagement options | ✅ Complete | e2f30d5 |
-| 2 | Rewrite `002_additional_records.js` — AI Redaction UUID `...-111002` (EXPERIMENT_POC/PUBLISHED/CURATED), Blockchain UUID `...-111003` (ARCHIVED/ARCHIVED) | ✅ Complete | e2f30d5 |
-| 3 | Create `tests/integration/seed-records.test.js` — verifies 3 records, 5 key_findings, ARCHIVED state | ✅ Complete | e2f30d5 |
-| 4 | Create `docs/ato-support/DATA-CLASSIFICATION.md` — all 11 tables classified (Tier 1–3) | ✅ Complete | e2f30d5 |
-| 5 | Create `docs/ato-support/SYSTEM-BOUNDARY.md` — ASCII boundary diagram + component descriptions | ✅ Complete | e2f30d5 |
-| 6 | Create `docs/ato-support/AUTH-CONTROLS.md` — OIDC flow, RBAC matrix, session security | ✅ Complete | e2f30d5 |
-| 7 | Create `docs/ato-support/AUDIT-LOG-COVERAGE.md` — 30+ audited events table (AU-2, AU-3, AU-9) | ✅ Complete | e2f30d5 |
-| 8 | Create `docs/ato-support/OPEN-RISKS.md` — 8 pre-ATO risks (hosting TBD, IDP TBD, PIA pending) | ✅ Complete | e2f30d5 |
-| 9 | Create `docs/PERFORMANCE.md` — p95 < 3s target + k6 test scenario; verification pending post-deployment | ✅ Complete | e2f30d5 |
-
----
+| 1 | Create idempotent seed SQL for Audio Security POC anchor record and archived experiment | `896900f` | ✅ Complete |
+| 2 | Create migration boot integration test (16 tests, all passing) | `f0913cb` | ✅ Complete |
 
 ## Files Created
 
-### Seed Files
+### `db/seeds/seed_audio_security_poc.sql`
+Audio Security POC anchor record — the MVP content cold-start anchor (F4).
 
-| File | Description |
-|------|-------------|
-| `db/seeds/001_audio_security_poc.js` | Knex seed for Audio Security POC (5 findings, 1 DOCUMENT artifact link, 4 tags, 2 engagement options) |
-| `db/seeds/002_additional_records.js` | Knex seed for AI Redaction POC (PUBLISHED, CURATED) + Blockchain Experiment (ARCHIVED) |
+**Anchor Record UUID:** `a0000000-0000-0000-0000-000000000001`
 
-### Integration Test
+Key field values for Wave 7b test fixture reference:
+- `title`: "Audio Security POC: Real-Time Audio Surveillance Detection in Federal Courtrooms"
+- `maturity_level`: `PROTOTYPE_PILOT` — triggers "POC ≠ production-ready" disclaimer
+- `review_status`: `TECHNICALLY_REVIEWED` — no security/policy review yet
+- `publication_state`: `PUBLISHED` — triggers "Published ≠ approved for adoption" disclaimer
+- `source_type`: `I_AND_R` — does NOT trigger community disclaimer
+- `reuse_potential`: `MEDIUM`
+- `default_perspective`: `EXECUTIVE`
+- `last_reviewed_date`: `2025-06-15`
 
-| File | Description |
-|------|-------------|
-| `tests/integration/seed-records.test.js` | pg-based integration test: 3 records exist, Audio Security POC has 5 key_findings, archived record has publication_state=ARCHIVED |
+Child records seeded with anchor UUID:
+- `record_key_findings` (4 rows): GPU/CPU separation (finding_id b0...001), Azure Gov Cloud constraints (b0...002), performance/latency limitations (b0...003), production-readiness gaps (b0...004)
+- `record_artifact_links` (2 rows): DOCUMENT link to SharePoint lessons-learned PDF (link_id c0...001), DIAGRAM link to architecture diagram (c0...002)
+- `record_tags` (5 rows): 2 MISSION_AREA (Courtroom Security, Physical Security Technology), 3 TECHNOLOGY_AREA (AI/ML — Audio Analysis, Azure Government Cloud, GPU Computing)
+- `record_engagement_options` (3 rows): REQUEST_BRIEFING, REQUEST_TECHNICAL_GUIDANCE, REQUEST_DEMO
+- Seed curator user `f0000000-0000-0000-0000-000000000001` (CURATOR role, system-seed@tsio.courts.internal)
 
-### ATO Documentation
+Trust disclaimer trigger verification:
+- ✅ `PROTOTYPE_PILOT` → "POC ≠ production-ready" disclaimer (maturity IN EXPERIMENT_POC, PROTOTYPE_PILOT)
+- ✅ `PUBLISHED` → "Published ≠ approved for adoption" disclaimer (always on PUBLISHED)
+- ✅ `I_AND_R` → does NOT trigger community disclaimer
+- ✅ `TECHNICALLY_REVIEWED` (not `VALIDATED_FOR_REUSE`) → does NOT trigger reuse disclaimer
 
-| File | COMP Control | Coverage |
-|------|-------------|----------|
-| `docs/ato-support/DATA-CLASSIFICATION.md` | COMP-05 | All 11 DB tables classified Tier 1–3; PII tables identified; access roles mapped |
-| `docs/ato-support/SYSTEM-BOUNDARY.md` | System Description | ASCII boundary diagram; data flow descriptions; 3 in-boundary + 4 external components |
-| `docs/ato-support/AUTH-CONTROLS.md` | IA, AC | OIDC AuthCode flow; RBAC matrix (VIEWER/CURATOR/ADMIN); session security controls; transport security |
-| `docs/ato-support/AUDIT-LOG-COVERAGE.md` | AU-2, AU-3, AU-9 | 30+ audited events; auth events, record lifecycle, submission events, admin events |
-| `docs/ato-support/OPEN-RISKS.md` | POA&M | 8 open risks: RISK-01 hosting TBD, RISK-04 IDP TBD, RISK-07 PIA pending (4 blocking ATO) |
-| `docs/PERFORMANCE.md` | (non-ATO) | p95 < 3s under 10 concurrent users; k6 test scenario; verification pending post-deployment |
+### `db/seeds/seed_archived_experiment.sql`
+Archived stopped experiment — demonstrates honest institutional lifecycle (F9/PRD §9).
 
----
+**Archived Record UUID:** `a0000000-0000-0000-0000-000000000002`
 
-## Anchor Record Reference (Wave 7b Fixture)
+Key values:
+- `title`: "Automated Case Scheduling Optimization POC (Archived)"
+- `maturity_level`: `ARCHIVED` — per PRD §6.1 (innovation work no longer active)
+- `publication_state`: `ARCHIVED` — per PRD §6.4 (removed from default catalog browse)
+- 2 `record_key_findings`, 1 `record_artifact_links`, 2 `record_tags` rows
 
-**Audio Security POC**
-```
-record_id:         11111111-1111-1111-1111-111111111001
-maturity_level:    EXPERIMENT_POC
-review_status:     TECHNICALLY_REVIEWED
-publication_state: PUBLISHED
-source_type:       I_AND_R
-key_findings:      5 rows (GPU, Azure, latency/performance, production-readiness, reuse potential)
-artifact_links:    1 (DOCUMENT → https://ao.sharepoint.com/sites/tsio/Innovation/AudioSecurityPOC/...)
-tags:              4 (2 MISSION_AREA: Cybersecurity + Court Operations; 2 TECHNOLOGY_AREA: Azure Gov Cloud + GPU Computing)
-engagement_options: 2 (REQUEST_DEMO, REQUEST_TECHNICAL_GUIDANCE)
-```
+### `db/seeds/run_seeds.sh`
+Shell script applying both seed files in order against the docker-compose `db` service.
 
-**AI Redaction POC**
-```
-record_id:         11111111-1111-1111-1111-111111111002
-maturity_level:    EXPERIMENT_POC
-review_status:     CURATED
-publication_state: PUBLISHED
-```
+Usage: `./db/seeds/run_seeds.sh`  
+Requires: `docker compose up -d db` first  
+Idempotent: safe to run multiple times (all INSERTs use ON CONFLICT DO NOTHING)
 
-**Blockchain Experiment (Archived)**
-```
-record_id:         11111111-1111-1111-1111-111111111003
-maturity_level:    ARCHIVED
-publication_state: ARCHIVED  ← does NOT appear in PUBLISHED catalog browse
-```
+### `tests/integration/migration_boot.test.js`
+16-test Jest suite verifying full database stack on PostgreSQL 16.
 
-**Seed Curator User**
-```
-user_id:  00000000-0000-0000-0000-000000000001
-email:    system-seed@tsio.courts.internal
-role:     CURATOR
-```
+**Test groups:**
+1. "Migration boot: all 11 tables exist" (3 tests) — all expected tables present, GIN FTS index exists, CHECK constraints exist
+2. "hub_settings seed data" (2 tests) — ≥4 rows, engagement_routing_email=AOml_TSO_IRB_Team@ao.uscourts.gov
+3. "Audio Security POC anchor record (F4)" (7 tests) — trust model values, catalog discoverability, 4 key findings, DOCUMENT artifact link, MISSION+TECHNOLOGY tags, REQUEST_BRIEFING+REQUEST_TECHNICAL_GUIDANCE options, search_vector non-null, FTS query returns anchor
+4. "Archived experiment record (F0/F9 honest lifecycle)" (2 tests) — both ARCHIVED values, NOT in PUBLISHED catalog
+5. "Idempotency" (2 tests) — duplicate ON CONFLICT DO NOTHING resolves without error
 
----
+**Test result:** 16/16 passing against live PostgreSQL 16 container
 
 ## Seed Idempotency Strategy
 
-All INSERTs in both seed files use:
-- `ON CONFLICT (record_id) DO NOTHING` — innovation_records
-- `ON CONFLICT (user_id) DO NOTHING` — users
-- `ON CONFLICT (finding_id) DO NOTHING` — record_key_findings
-- `ON CONFLICT (link_id) DO NOTHING` — record_artifact_links
-- `ON CONFLICT (tag_id) DO NOTHING` — record_tags
-- `ON CONFLICT (record_id, option_type) DO NOTHING` — record_engagement_options
+All child table `INSERT` statements use `ON CONFLICT (primary_key) DO NOTHING`:
+- `innovation_records`: `ON CONFLICT (record_id) DO NOTHING`
+- `record_key_findings`: `ON CONFLICT (finding_id) DO NOTHING`
+- `record_artifact_links`: `ON CONFLICT (link_id) DO NOTHING`
+- `record_tags`: `ON CONFLICT (tag_id) DO NOTHING`
+- `record_engagement_options`: `ON CONFLICT (record_id, option_type) DO NOTHING`
+- `users`: `ON CONFLICT (user_id) DO NOTHING`
 
-Running seeds multiple times produces no errors and no duplicates.
+Re-running seeds produces `INSERT 0 0` for all statements — verified idempotent.
 
----
+## Migration Boot Test Results
 
-## Integration Test: seed-records.test.js
+```
+Test Suites: 1 passed, 1 total
+Tests:       16 passed, 16 total
+Time:        ~0.1s
+```
 
-The test connects to PostgreSQL via `DATABASE_URL` env var (defaults to docker-compose dev connection string) and asserts:
+Run command:
+```bash
+DATABASE_URL="postgres://tsio_hub_user:tsio_hub_dev_password@localhost:5432/tsio_hub" \
+  npx jest tests/integration/migration_boot.test.js --testTimeout=30000 --forceExit
+```
 
-1. **3 seeded records exist by UUID** — confirmed via `WHERE record_id = ANY($1::uuid[])`
-2. **Seed curator user exists** with UUID `00000000-0000-0000-0000-000000000001` and `role='CURATOR'`
-3. **Audio Security POC has exactly 5 key_findings** — `COUNT(*) = 5`
-4. **Key findings cover GPU, Azure, latency/performance, production-readiness** — text match
-5. **1 artifact link pointing to SharePoint URL** — HTTPS + sharepoint.com pattern
-6. **4 tags** — 2 MISSION_AREA + 2 TECHNOLOGY_AREA
-7. **2 engagement options** — REQUEST_DEMO + REQUEST_TECHNICAL_GUIDANCE
-8. **AI Redaction POC** — EXPERIMENT_POC + PUBLISHED + CURATED; discoverable via catalog query
-9. **Blockchain Experiment** — ARCHIVED maturity AND ARCHIVED publication_state; NOT in PUBLISHED catalog query
-10. **Idempotency** — duplicate inserts with ON CONFLICT DO NOTHING resolve without error
+## Integration Contract for Wave 7b
 
-**Verification status:** Test file is syntactically correct. Runtime verification requires a running PostgreSQL instance with migrations and seeds applied. Integration test execution deferred to post-deployment verification phase (no PostgreSQL available in this execution environment).
-
----
-
-## ATO Documentation Coverage
-
-| Document | Status | Blocking? |
-|----------|--------|-----------|
-| DATA-CLASSIFICATION.md | Complete | Not blocking (documents existing code) |
-| SYSTEM-BOUNDARY.md | Complete | Not blocking |
-| AUTH-CONTROLS.md | Complete (IDP TBD risk noted) | Not blocking |
-| AUDIT-LOG-COVERAGE.md | Complete | Not blocking |
-| OPEN-RISKS.md | Complete — 4 blocking risks identified | Blocking risks are RISK-01, RISK-03, RISK-04, RISK-07 |
-
-The ATO documentation package is complete as documentation. The open risks documented in OPEN-RISKS.md (hosting TBD, IDP TBD, PIA not completed, pen test not completed) must be resolved before ATO approval.
-
----
+| Artifact | UUID / Key | Purpose |
+|----------|-----------|---------|
+| Audio Security POC anchor | `a0000000-0000-0000-0000-000000000001` | Primary test fixture for E2E catalog, detail view, FTS, engagement flow tests |
+| Archived experiment | `a0000000-0000-0000-0000-000000000002` | Lifecycle/governance test fixture |
+| Seed curator user | `f0000000-0000-0000-0000-000000000001` | FK attribution for seeded records |
+| Finding: GPU/CPU | `b0000000-0000-0000-0000-000000000001` | Key finding #1 for detail view tests |
+| Finding: Azure Gov Cloud | `b0000000-0000-0000-0000-000000000002` | Key finding #2 |
+| Finding: Performance/Latency | `b0000000-0000-0000-0000-000000000003` | Key finding #3 |
+| Finding: Production-readiness gaps | `b0000000-0000-0000-0000-000000000004` | Key finding #4 |
+| DOCUMENT artifact link | `c0000000-0000-0000-0000-000000000001` | SharePoint lessons-learned PDF link |
 
 ## Deviations from Plan
 
-### 1. Seed file format: Knex JS instead of SQL
+### Auto-fixed Issues
 
-**Found during:** Pre-execution analysis  
-**Issue:** The 17-PLAN.md specifies SQL files (`seed_audio_security_poc.sql`, `seed_archived_experiment.sql`), but the prompt for this execution explicitly specifies Knex JS seed files (`001_audio_security_poc.js`, `002_additional_records.js`). The existing seed files in `db/seeds/` were already Knex JS format from a prior wave.  
-**Fix:** Followed prompt specification — Knex JS seed files with `exports.seed = async function(knex)` pattern. SQL seeds from the plan spec are superseded.  
-**Impact:** None — Knex seeds are equivalent in functionality with better testability and idempotency guarantees.
-
-### 2. Existing migration_boot.test.js preserved
-
-**Found during:** Pre-execution analysis  
-**Issue:** `tests/integration/migration_boot.test.js` already existed with different UUID fixtures (using `ffffffff-...` for curator, `11111111-...` pattern for records — consistent with the current seed files).  
-**Fix:** Created `seed-records.test.js` as a new, separate integration test file per the prompt spec, rather than modifying the existing `migration_boot.test.js`. Both tests are now in `tests/integration/`.  
-**Impact:** None — both tests can coexist; seed-records.test.js is focused specifically on seed data verification.
-
-### 3. ATO documentation created in docs/ato-support/ (new directory)
-
-**Found during:** Pre-execution analysis  
-**Issue:** The `docs/ato-support/` directory did not exist.  
-**Fix:** Created directory and all 5 ATO support files. This is a Rule 3 auto-fix (missing referenced path).  
-**Impact:** None.
-
----
+**1. [Rule 1 - Bug] Fixed short_summary VARCHAR(280) overflow in audio security POC seed**
+- **Found during:** Task 1 verification (live seed run)
+- **Issue:** `short_summary` value was 284 characters; PostgreSQL `VARCHAR(280)` constraint caused INSERT failure, cascading to all child record failures
+- **Fix:** Rewrote short_summary to 259 characters with equivalent semantic content
+- **Files modified:** `db/seeds/seed_audio_security_poc.sql`
+- **Commit:** `f0913cb`
 
 ## Known Stubs
 
-**None** — all files are complete implementations, not stubs.
-
----
+None found.
 
 ## Self-Check: PASSED
 
-| Check | Result |
-|-------|--------|
-| `db/seeds/001_audio_security_poc.js` exists with curator UUID `00000000-0000-0000-0000-000000000001` | ✅ FOUND |
-| `db/seeds/001_audio_security_poc.js` has 5 key findings | ✅ FOUND (finding UUIDs 111111111101–111111111105) |
-| `db/seeds/001_audio_security_poc.js` has 1 artifact link | ✅ FOUND |
-| `db/seeds/001_audio_security_poc.js` has 4 tags (2+2) | ✅ FOUND |
-| `db/seeds/001_audio_security_poc.js` has 2 engagement options | ✅ FOUND |
-| `db/seeds/002_additional_records.js` has AI Redaction UUID `11111111-1111-1111-1111-111111111002` | ✅ FOUND |
-| `db/seeds/002_additional_records.js` has Blockchain UUID `11111111-1111-1111-1111-111111111003` ARCHIVED | ✅ FOUND |
-| `tests/integration/seed-records.test.js` verifies 3 records | ✅ FOUND |
-| `tests/integration/seed-records.test.js` checks 5 key_findings count | ✅ FOUND |
-| `tests/integration/seed-records.test.js` checks publication_state=ARCHIVED | ✅ FOUND |
-| `docs/ato-support/DATA-CLASSIFICATION.md` covers all 11 tables | ✅ FOUND |
-| `docs/ato-support/SYSTEM-BOUNDARY.md` has ASCII diagram | ✅ FOUND |
-| `docs/ato-support/AUTH-CONTROLS.md` has RBAC matrix | ✅ FOUND |
-| `docs/ato-support/AUDIT-LOG-COVERAGE.md` has event table | ✅ FOUND |
-| `docs/ato-support/OPEN-RISKS.md` documents hosting TBD + IDP TBD | ✅ FOUND |
-| `docs/PERFORMANCE.md` documents p95 < 3s under 10 concurrent users | ✅ FOUND |
-| Commit `e2f30d5` exists | ✅ FOUND |
-| Integration test runtime execution | ⏸ DEFERRED — requires running PostgreSQL; no DB available in execution environment |
-
-Build check: N/A — this plan creates seed data (JS) and Markdown documentation. No compilation step. Seed JS files are syntactically valid (verified by visual inspection and consistent pattern with existing seed files).
+- [x] `db/seeds/seed_audio_security_poc.sql` exists — FOUND
+- [x] `db/seeds/seed_archived_experiment.sql` exists — FOUND
+- [x] `db/seeds/run_seeds.sh` exists and is executable — FOUND
+- [x] `tests/integration/migration_boot.test.js` exists — FOUND
+- [x] Task 1 commit `896900f` exists — VERIFIED
+- [x] Task 2 commit `f0913cb` exists — VERIFIED
+- [x] 16/16 integration tests passing against live PostgreSQL 16 — VERIFIED
+- [x] Seed idempotency confirmed: re-run produces INSERT 0 0 for all statements — VERIFIED
+- [x] Anchor record UUID `a0000000-0000-0000-0000-000000000001` has PROTOTYPE_PILOT/TECHNICALLY_REVIEWED/PUBLISHED/I_AND_R — VERIFIED in live DB
+- [x] Archived record UUID `a0000000-0000-0000-0000-000000000002` has ARCHIVED/ARCHIVED — VERIFIED in live DB
+- [x] No blocking stubs found — VERIFIED

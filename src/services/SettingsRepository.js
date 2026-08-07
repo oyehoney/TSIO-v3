@@ -1,11 +1,10 @@
 'use strict';
-// src/services/SettingsRepository.js
 const { getDb } = require('../db');
 
 /**
- * Get a single setting value by key from hub_settings table.
+ * Get the value of a hub_settings key.
  * @param {string} key - The setting_key to look up
- * @returns {Promise<string|null>} The setting_value, or null if not found
+ * @returns {Promise<string|null>} - The setting_value or null if not found
  */
 async function getSettingValue(key) {
   const db = getDb();
@@ -14,8 +13,8 @@ async function getSettingValue(key) {
 }
 
 /**
- * Get all settings from hub_settings table.
- * @returns {Promise<Array>} All settings ordered by setting_key
+ * Get all hub settings.
+ * @returns {Promise<Array>}
  */
 async function getAllSettings() {
   const db = getDb();
@@ -23,21 +22,17 @@ async function getAllSettings() {
 }
 
 /**
- * Update a setting value in hub_settings table.
+ * Update a hub setting value.
  * @param {string} key - The setting_key to update
- * @param {string} value - New value
- * @param {string} updatedByUserId - UUID of the curator making the change
- * @returns {Promise<string|null>} The new setting value
+ * @param {string} value - The new value
+ * @param {string} updatedByUserId - The user_id of the curator making the change
+ * @returns {Promise<string|null>} - The updated setting_value
  */
 async function updateSetting(key, value, updatedByUserId) {
   const db = getDb();
   await db('hub_settings')
     .where({ setting_key: key })
-    .update({
-      setting_value: value,
-      updated_at: new Date(),
-      updated_by_user_id: updatedByUserId
-    });
+    .update({ setting_value: value, updated_at: new Date(), updated_by_user_id: updatedByUserId });
   return getSettingValue(key);
 }
 

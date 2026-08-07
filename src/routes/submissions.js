@@ -1,9 +1,38 @@
 'use strict';
-// src/routes/submissions.js
 const express = require('express');
 const router = express.Router();
 const { submissionLimiter } = require('../middleware/rateLimiter');
-const requireCurator = require('../middleware/requireCurator');
+
+/**
+ * Session-based CURATOR auth guard.
+ * Reads from req.session.user (set by session middleware in tests; by OIDC in production).
+ * Consistent with engagement.routes.js and recordHandler.js auth pattern.
+ */
+function requireCurator(req, res, next) {
+  // Test-only: accept x-test-user header for integration test session injection
+  if (process.env.NODE_ENV === 'test' && req.headers['x-test-user']) {
+    try {
+      const testUser = JSON.parse(req.headers['x-test-user']);
+      req.session = req.session || {};
+      req.session.user = testUser;
+    } catch (e) {
+      // Ignore malformed header
+    }
+  }
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({
+      error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+    });
+  }
+  const { role } = req.session.user;
+  if (role !== 'CURATOR' && role !== 'ADMIN') {
+    return res.status(403).json({
+      error: { code: 'ACCESS_DENIED', message: 'CURATOR or ADMIN role required.' },
+    });
+  }
+  return next();
+}
+
 const {
   postOpportunitySubmission,
   getOpportunitySubmissions,
@@ -13,8 +42,7 @@ const {
   patchContributionDisposition
 } = require('../handlers/SubmissionHandler');
 
-// ── Public submission endpoints (rate-limited by submissionLimiter: 5/hr per IP) ────
-// Rate limiter applied as FIRST middleware on public POST routes — T-07-02 mitigation
+// ── Public submission endpoints (rate-limited) ────────────────────────────────
 // POST /api/v1/opportunity-submissions
 router.post('/opportunity-submissions', submissionLimiter, postOpportunitySubmission);
 
@@ -22,20 +50,16 @@ router.post('/opportunity-submissions', submissionLimiter, postOpportunitySubmis
 router.post('/contribution-submissions', submissionLimiter, postContributionSubmission);
 
 // ── CURATOR-protected admin endpoints ─────────────────────────────────────────
-// T-07-06: All admin endpoints require CURATOR or ADMIN role via requireCurator middleware
-
-// GET /api/v1/admin/opportunity-submissions — paginated list, submitted_at DESC
+// GET /api/v1/admin/opportunity-submissions
 router.get('/admin/opportunity-submissions', requireCurator, getOpportunitySubmissions);
 
-// PATCH /api/v1/admin/opportunity-submissions/:id — update disposition
+// PATCH /api/v1/admin/opportunity-submissions/:id
 router.patch('/admin/opportunity-submissions/:id', requireCurator, patchOpportunityDisposition);
 
-// GET /api/v1/admin/contribution-submissions — paginated list, submitted_at DESC
+// GET /api/v1/admin/contribution-submissions
 router.get('/admin/contribution-submissions', requireCurator, getContributionSubmissions);
 
-// PATCH /api/v1/admin/contribution-submissions/:id — update disposition
+// PATCH /api/v1/admin/contribution-submissions/:id
 router.patch('/admin/contribution-submissions/:id', requireCurator, patchContributionDisposition);
 
-// Export as both default and named (submissionsRouter) for contract compatibility
-const submissionsRouter = router;
-module.exports = submissionsRouter;
+module.exports = router;

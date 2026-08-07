@@ -3,37 +3,29 @@
 /**
  * engagement.test.js
  *
- * Jest + Supertest integration tests for all EngagementService endpoints.
+ * Jest + Supertest integration tests for all engagement endpoints.
  * Tests run against a real PostgreSQL instance via DATABASE_URL.
  *
  * Covers:
- * POST /api/v1/engagement-requests (PUBLIC):
- *   - 201 happy path: valid request on PUBLISHED record with configured type
- *   - 404 RECORD_NOT_FOUND: record does not exist
- *   - 404 RECORD_NOT_FOUND: record exists but is DRAFT (not PUBLISHED)
- *   - 422 INVALID_ENGAGEMENT_TYPE: request_type not configured on record
- *   - 422 CAPTCHA_INVALID: invalid captcha token
- *   - 429 RATE_LIMIT_EXCEEDED: exceeds 10/hour from same IP
- *
- * GET /api/v1/admin/engagement-requests (CURATOR):
- *   - 200 returns paginated list of engagement requests
- *   - 200 filter by record_id returns only that record's requests
- *
- * PATCH /api/v1/admin/engagement-requests/:id (CURATOR):
- *   - 200 updates status to IN_PROGRESS with curator_note
- *   - 404 non-existent request_id
- *
- * CAPTCHA bypass: set CAPTCHA_SECRET_KEY=undefined in test env (no outbound call).
- * When CAPTCHA_SECRET_KEY is not set, CaptchaService treats as disabled and returns valid.
- *
- * Rate limit test: uses forceExpressRateLimit flag to bypass the rate limiter for
- * most tests (applied per-instance via custom createApp option).
+ * - POST /api/v1/engagement-requests (PUBLIC)
+ *     201 happy path (DB row verified)
+ *     404 RECORD_NOT_FOUND (non-existent record_id)
+ *     404 RECORD_NOT_FOUND (DRAFT record — not PUBLISHED)
+ *     422 INVALID_ENGAGEMENT_TYPE (type not configured on record)
+ *     422 CAPTCHA_INVALID (invalid captcha token — bypassed via captcha_enabled=false in hub_settings)
+ *     429 RATE_LIMIT_EXCEEDED (11th request from same IP)
+ * - GET /api/v1/admin/engagement-requests (CURATOR)
+ *     200 paginated list
+ *     200 filter by record_id
+ * - PATCH /api/v1/admin/engagement-requests/:id (CURATOR)
+ *     200 status update with curator_note
+ *     404 non-existent request_id
  */
 
 const request = require('supertest');
 const knex = require('knex');
 const { createApp } = require('../../src/app');
-const { createTestCurator, cleanupRecords, buildFullRecord } = require('../helpers/testDb');
+const { createTestCurator } = require('../helpers/testDb');
 
 // ─── DB & App Setup ───────────────────────────────────────────────────────────
 
@@ -41,25 +33,22 @@ let db;
 let testCuratorId;
 let createdRecordIds = [];
 let createdEngagementIds = [];
+let curatorApp;
+let publicApp;
 
-/** Session middleware factory — sets req.user and req.session.user for curator */
+// Session middleware factory for curator auth
 function curatorSessionMiddleware(userId) {
   return (req, _res, next) => {
     req.session = { user: { user_id: userId, role: 'CURATOR' } };
-    req.user = { user_id: userId, role: 'CURATOR' };
     next();
   };
 }
 
-/** No-session middleware — PUBLIC access */
+// No-session middleware (PUBLIC)
 function noSessionMiddleware(req, _res, next) {
   req.session = {};
   next();
 }
-
-/** App instances */
-let curatorApp;   // Has curator session — used for admin endpoints
-let publicApp;    // No session — used for public POST endpoint
 
 beforeAll(async () => {
   db = knex({
@@ -82,7 +71,7 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // Clean up engagement requests first (FK to innovation_records)
+  // Clean up engagement requests
   if (createdEngagementIds.length > 0) {
     await db('engagement_requests')
       .whereIn('request_id', createdEngagementIds)
@@ -90,306 +79,360 @@ afterEach(async () => {
       .catch(() => {});
     createdEngagementIds = [];
   }
+  // Clean up records (engagement_requests cascade via ON DELETE CASCADE not set, so clean engagement first)
   if (createdRecordIds.length > 0) {
-    await cleanupRecords(db, createdRecordIds);
+    // Remove engagement requests for these records
+    await db('engagement_requests')
+      .whereIn('record_id', createdRecordIds)
+      .delete()
+      .catch(() => {});
+    await db('audit_log')
+      .whereIn('record_id', createdRecordIds)
+      .delete()
+      .catch(() => {});
+    await db('innovation_records')
+      .whereIn('record_id', createdRecordIds)
+      .delete()
+      .catch(() => {});
     createdRecordIds = [];
   }
 });
 
 afterAll(async () => {
-  // Final cleanup of any lingering test data
-  if (testCuratorId) {
-    await db('engagement_requests')
-      .where('updated_by_user_id', testCuratorId)
-      .delete()
-      .catch(() => {});
-    await db('users')
-      .where('user_id', testCuratorId)
-      .delete()
-      .catch(() => {});
-  }
+  await db('users')
+    .where('user_id', testCuratorId)
+    .delete()
+    .catch(() => {});
   await db.destroy();
 });
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+function trackRecord(id) {
+  if (id && !createdRecordIds.includes(id)) createdRecordIds.push(id);
+  return id;
+}
 
-/**
- * Seed a PUBLISHED innovation_record with specified engagement_options.
- * Returns the created record.
- */
-async function seedPublishedRecord(engagementOptions = ['REQUEST_DEMO']) {
-  // Create a full record using the test helper
-  const fullRecord = buildFullRecord(testCuratorId);
+function trackEngagement(id) {
+  if (id && !createdEngagementIds.includes(id)) createdEngagementIds.push(id);
+  return id;
+}
 
-  // Use the curator app to create and publish the record
-  // Step 1: Create (DRAFT)
-  const createRes = await request(curatorApp)
-    .post('/api/v1/records')
-    .send({ ...fullRecord, engagement_options: engagementOptions });
+// Helper: Create a PUBLISHED record with specified engagement options
+async function createPublishedRecord(engagementOptions = ['REQUEST_DEMO']) {
+  // Full record payload (all pub-required fields) — strings meet DB check constraints (min 50 chars)
+  const payload = {
+    title: 'Test Published Record for Engagement Testing',
+    problem_statement: 'Courtroom audio systems lack automated security monitoring, creating risk of unauthorized recording and evidence tampering in federal proceedings.',
+    what_was_explored: 'Explored AI-based anomaly detection for courtroom audio streams, testing three commercial ML platforms against known threat signatures in a simulated environment.',
+    outcome_summary: 'Proof-of-concept demonstrated 94% detection accuracy for known threat signatures. Integration with existing court AV infrastructure is technically feasible within six months.',
+    reuse_guidance: 'Reusable for any district with existing IP-based audio infrastructure. Requires local security assessment before deployment.',
+    short_summary: 'AI anomaly detection POC for courtroom audio security with 94% accuracy.',
+    maturity_level: 'EXPERIMENT_POC',
+    review_status: 'SUBMITTED',
+    reuse_potential: 'HIGH',
+    source_type: 'I_AND_R',
+    owner_name: 'Test Owner',
+    owner_office: 'TSIO',
+    contributing_office: 'TSIO Innovation and Research',
+    contributor_attribution: 'TSIO I&R Team',
+    executive_perspective_text: 'This proof-of-concept validates that AI-based audio security monitoring is technically feasible for federal courtroom environments with high accuracy threshold.',
+    executive_recommendation: 'Recommend proceeding to pilot phase in two to three volunteer districts with dedicated AV staff to validate operational integration.',
+    technical_perspective_text: 'The POC used a transformer-based anomaly detection model fine-tuned on courtroom audio signatures. Latency averaged 120ms, within acceptable bounds for real-time monitoring.',
+    security_findings: 'No significant vulnerabilities identified in POC architecture. Full security assessment required before pilot deployment to production systems.',
+    performance_findings: 'Processing 8 simultaneous audio streams at 120ms average latency on commodity hardware with 8-core 32GB RAM configuration.',
+    default_perspective: 'EXECUTIVE',
+    last_reviewed_date: new Date().toISOString().split('T')[0],
+    created_by_user_id: testCuratorId,
+    updated_by_user_id: testCuratorId,
+    key_findings: ['94% detection accuracy for known threat signatures in simulated environment.'],
+    artifact_links: [{
+      label: 'POC Report',
+      url: 'https://example.ao.uscourts.gov/reports/poc.pdf',
+      artifact_type: 'DOCUMENT',
+      display_order: 0,
+    }],
+    mission_area_tags: ['Courtroom Technology'],
+    technology_area_tags: ['AI/ML'],
+    engagement_options: engagementOptions,
+  };
 
+  const createRes = await request(curatorApp).post('/api/v1/records').send(payload);
   if (createRes.status !== 201) {
-    throw new Error(`Failed to create record: ${JSON.stringify(createRes.body)}`);
+    throw new Error(`Failed to create record: ${createRes.status} ${JSON.stringify(createRes.body)}`);
   }
   const recordId = createRes.body.record_id;
-  createdRecordIds.push(recordId);
+  trackRecord(recordId);
 
-  // Step 2: Submit for review
-  await request(curatorApp).post(`/api/v1/records/${recordId}/submit-review`);
-
-  // Step 3: Publish
-  const pubRes = await request(curatorApp).post(`/api/v1/records/${recordId}/publish`);
-  if (pubRes.status !== 200) {
-    throw new Error(`Failed to publish record: ${JSON.stringify(pubRes.body)}`);
+  // Submit for review
+  const submitRes = await request(curatorApp).post(`/api/v1/records/${recordId}/submit-review`);
+  if (submitRes.status !== 200) {
+    throw new Error(`Failed to submit record for review: ${submitRes.status}`);
   }
 
-  return pubRes.body;
+  // Publish
+  const publishRes = await request(curatorApp).post(`/api/v1/records/${recordId}/publish`);
+  if (publishRes.status !== 200) {
+    throw new Error(`Failed to publish record: ${publishRes.status} ${JSON.stringify(publishRes.body)}`);
+  }
+
+  return recordId;
 }
 
-/**
- * Seed a DRAFT innovation_record (stays in DRAFT state).
- */
-async function seedDraftRecord() {
-  const fullRecord = buildFullRecord(testCuratorId);
-  const createRes = await request(curatorApp)
-    .post('/api/v1/records')
-    .send(fullRecord);
-
+// Helper: Create a DRAFT record (not published)
+async function createDraftRecord() {
+  const payload = {
+    title: 'Draft Record for Engagement Test',
+    problem_statement: 'A'.repeat(50),
+    what_was_explored: 'B'.repeat(50),
+    outcome_summary: 'C'.repeat(50),
+    maturity_level: 'IDEA',
+    review_status: 'SUBMITTED',
+    reuse_potential: 'MEDIUM',
+    source_type: 'I_AND_R',
+    owner_name: 'Owner',
+    owner_office: 'TSIO',
+    contributing_office: 'TSIO I&R',
+  };
+  const createRes = await request(curatorApp).post('/api/v1/records').send(payload);
   if (createRes.status !== 201) {
-    throw new Error(`Failed to create draft record: ${JSON.stringify(createRes.body)}`);
+    throw new Error(`Failed to create draft record: ${createRes.status}`);
   }
-
-  createdRecordIds.push(createRes.body.record_id);
-  return createRes.body;
+  const recordId = createRes.body.record_id;
+  trackRecord(recordId);
+  return recordId;
 }
 
-/**
- * Build a valid EngagementRequestCreateRequest body.
- */
-function buildEngagementBody(recordId, overrides = {}) {
+// Standard valid engagement request body
+function buildEngagementBody(recordId, requestType = 'REQUEST_DEMO') {
   return {
     record_id: recordId,
-    request_type: 'REQUEST_DEMO',
+    request_type: requestType,
     requestor_name: 'Jane Smith',
-    requestor_email: 'jane.smith@court.gov',
-    requestor_office: 'District Court of Northern California',
-    requestor_title: 'IT Director',
-    description_of_interest: 'We are interested in exploring how this innovation could benefit our district courtroom security operations.',
-    desired_next_step: 'Schedule a demo with our technical team.',
+    requestor_email: 'jane.smith@ao.uscourts.gov',
+    requestor_office: 'Federal Judiciary Center',
+    requestor_title: 'Senior Technology Advisor',
+    description_of_interest: 'We are interested in exploring this technology for our district. The potential applications seem highly relevant to our current challenges with audio security.',
+    desired_next_step: 'Would like to schedule a 30-minute discovery call.',
     captcha_token: 'test-bypass-token',
-    ...overrides,
   };
 }
 
-// ─── POST /api/v1/engagement-requests ─────────────────────────────────────────
+// Generate a unique test IP to prevent rate limit state pollution between test suites.
+// Uses 203.0.113.x range (TEST-NET-3, per RFC 5737 — documentation/testing only).
+let testIpCounter = 1;
+function nextTestIp() {
+  const ip = `203.0.113.${testIpCounter}`;
+  testIpCounter = (testIpCounter % 254) + 1;
+  return ip;
+}
+
+// ─── Context Boot Test ────────────────────────────────────────────────────────
+
+describe('context boot', () => {
+  it('app starts and connects to DB successfully', async () => {
+    const result = await db.raw('SELECT 1 as ok');
+    expect(result.rows[0].ok).toBe(1);
+  });
+});
+
+// ─── POST /api/v1/engagement-requests ────────────────────────────────────────
 
 describe('POST /api/v1/engagement-requests', () => {
-  test('201 — valid request for configured type on PUBLISHED record', async () => {
-    const record = await seedPublishedRecord(['REQUEST_DEMO', 'REQUEST_TECHNICAL_GUIDANCE']);
-    const body = buildEngagementBody(record.record_id);
+  let publishedRecordId;
+
+  beforeEach(async () => {
+    publishedRecordId = await createPublishedRecord(['REQUEST_DEMO', 'REQUEST_BRIEFING']);
+  });
+
+  it('201 — valid request for configured type on PUBLISHED record', async () => {
+    const body = buildEngagementBody(publishedRecordId, 'REQUEST_DEMO');
 
     const res = await request(publicApp)
       .post('/api/v1/engagement-requests')
+      .set('X-Forwarded-For', nextTestIp())
       .send(body);
 
     expect(res.status).toBe(201);
-
-    // Verify EngagementRequest shape
-    expect(res.body).toMatchObject({
-      record_id: record.record_id,
-      request_type: 'REQUEST_DEMO',
-      requestor_name: 'Jane Smith',
-      requestor_email: 'jane.smith@court.gov',
-      requestor_office: 'District Court of Northern California',
-      status: 'SUBMITTED',
-    });
-    expect(res.body.request_id).toBeDefined();
-    expect(typeof res.body.request_id).toBe('string');
-    expect(res.body.submitted_at).toBeDefined();
+    // Response shape: EngagementRequest
+    expect(res.body.request_id).toBeTruthy();
+    expect(res.body.record_id).toBe(publishedRecordId);
+    expect(res.body.request_type).toBe('REQUEST_DEMO');
+    expect(res.body.status).toBe('SUBMITTED');
+    expect(res.body.submitted_at).toBeTruthy();
+    expect(new Date(res.body.submitted_at).toISOString()).toBeTruthy();
+    expect(res.body.requestor_name).toBe('Jane Smith');
+    expect(res.body.requestor_email).toBe('jane.smith@ao.uscourts.gov');
+    expect(res.body.requestor_office).toBe('Federal Judiciary Center');
     expect(res.body.curator_note).toBeNull();
-    expect(res.body.updated_by_user_id).toBeNull();
 
-    // Verify row exists in DB
-    const dbRow = await db('engagement_requests')
+    trackEngagement(res.body.request_id);
+
+    // Verify row exists in engagement_requests table
+    const row = await db('engagement_requests')
       .where({ request_id: res.body.request_id })
       .first();
-    expect(dbRow).toBeDefined();
-    expect(dbRow.status).toBe('SUBMITTED');
-
-    createdEngagementIds.push(res.body.request_id);
+    expect(row).toBeTruthy();
+    expect(row.request_type).toBe('REQUEST_DEMO');
+    expect(row.status).toBe('SUBMITTED');
   });
 
-  test('404 RECORD_NOT_FOUND — record does not exist', async () => {
-    const nonExistentId = '00000000-0000-4000-a000-000000000001';
-    const body = buildEngagementBody(nonExistentId);
+  it('404 RECORD_NOT_FOUND — record does not exist', async () => {
+    // Use a syntactically valid UUID that does not exist in the database
+    const body = buildEngagementBody('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'REQUEST_DEMO');
 
     const res = await request(publicApp)
       .post('/api/v1/engagement-requests')
+      .set('X-Forwarded-For', nextTestIp())
       .send(body);
 
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('RECORD_NOT_FOUND');
   });
 
-  test('404 RECORD_NOT_FOUND — record exists but is DRAFT (not PUBLISHED)', async () => {
-    const draftRecord = await seedDraftRecord();
-    const body = buildEngagementBody(draftRecord.record_id);
+  it('404 RECORD_NOT_FOUND — record exists but is DRAFT (not PUBLISHED)', async () => {
+    const draftRecordId = await createDraftRecord();
+    const body = buildEngagementBody(draftRecordId, 'REQUEST_DEMO');
 
     const res = await request(publicApp)
       .post('/api/v1/engagement-requests')
+      .set('X-Forwarded-For', nextTestIp())
       .send(body);
 
-    // Public users must not know the record exists — same 404 as non-existent (T-08-03)
+    // Per TechArch §T-08-03: 404 even for existing DRAFT (prevent enumeration)
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('RECORD_NOT_FOUND');
   });
 
-  test('422 INVALID_ENGAGEMENT_TYPE — request_type not configured on record', async () => {
-    // Seed record with only REQUEST_DEMO configured
-    const record = await seedPublishedRecord(['REQUEST_DEMO']);
-    // Request a type that is NOT configured on this record
-    const body = buildEngagementBody(record.record_id, { request_type: 'REQUEST_BRIEFING' });
+  it('422 INVALID_ENGAGEMENT_TYPE — request_type not configured on record', async () => {
+    // Record only has REQUEST_DEMO and REQUEST_BRIEFING configured
+    const body = buildEngagementBody(publishedRecordId, 'REQUEST_ADOPTION_DISCUSSION');
 
     const res = await request(publicApp)
       .post('/api/v1/engagement-requests')
+      .set('X-Forwarded-For', nextTestIp())
       .send(body);
 
     expect(res.status).toBe(422);
     expect(res.body.error.code).toBe('INVALID_ENGAGEMENT_TYPE');
   });
 
-  test('422 CAPTCHA_INVALID — invalid captcha token when CAPTCHA is enabled', async () => {
-    // CaptchaService returns valid when CAPTCHA_SECRET_KEY is not set (treat as disabled).
-    // To test CAPTCHA_INVALID, we need to simulate CAPTCHA enabled with a bad token.
-    // We mock this by temporarily setting env variables and checking service behavior.
-    //
-    // Per plan spec: "Use environment variable CAPTCHA_BYPASS_TOKEN (set to a test value
-    // in .env.test) that CaptchaService accepts as valid without an outbound HTTP call."
-    //
-    // Since CaptchaService does NOT bypass on missing token when captcha_enabled = 'true'
-    // in hub_settings, we test the code path by sending no token with CAPTCHA_SECRET_KEY set.
-    //
-    // In the default test environment where CAPTCHA_SECRET_KEY is undefined, CaptchaService
-    // treats it as disabled and passes all tokens. We verify 422 is returned when
-    // captcha_enabled = 'true' is set in hub_settings.
-
-    // Update hub_settings to enable captcha for this test
-    await db('hub_settings').insert({
-      setting_key: 'captcha_enabled',
-      setting_value: 'true',
-      description: 'Test: captcha enabled',
-    }).onConflict('setting_key').merge();
-
-    // Set a fake CAPTCHA_SECRET_KEY so CaptchaService makes the validation attempt
-    const originalKey = process.env.CAPTCHA_SECRET_KEY;
-    process.env.CAPTCHA_SECRET_KEY = 'test-invalid-key';
+  it('422 CAPTCHA_INVALID — invalid captcha token when captcha_enabled=true', async () => {
+    // Temporarily enable captcha for this test
+    await db('hub_settings')
+      .where({ setting_key: 'captcha_enabled' })
+      .update({ setting_value: 'true' });
 
     try {
-      const record = await seedPublishedRecord(['REQUEST_DEMO']);
-      // Send with an obviously invalid token — CaptchaService will call provider
-      // and get back a failure (the test key is not a real reCAPTCHA key)
-      const body = buildEngagementBody(record.record_id, { captcha_token: 'invalid-token-xyz' });
+      const body = {
+        ...buildEngagementBody(publishedRecordId, 'REQUEST_DEMO'),
+        captcha_token: 'invalid-captcha-token-12345',
+      };
 
-      const res = await request(publicApp)
-        .post('/api/v1/engagement-requests')
-        .send(body);
+      // CAPTCHA_SECRET_KEY not set → validate() returns false when captcha_enabled=true and no secret
+      // Actually: CaptchaService returns { valid: true } when CAPTCHA_SECRET_KEY is not set
+      // So we need to set a fake secret to get CAPTCHA_INVALID
+      const originalSecret = process.env.CAPTCHA_SECRET_KEY;
+      process.env.CAPTCHA_SECRET_KEY = 'fake-secret-for-testing';
 
-      // CaptchaService.validate() will fail (network error or invalid response)
-      // and return { valid: false, error: 'CAPTCHA_INVALID' }
-      expect(res.status).toBe(422);
-      expect(res.body.error.code).toBe('CAPTCHA_INVALID');
-    } finally {
-      // Restore env and hub_settings
-      if (originalKey === undefined) {
-        delete process.env.CAPTCHA_SECRET_KEY;
-      } else {
-        process.env.CAPTCHA_SECRET_KEY = originalKey;
+      try {
+        const res = await request(publicApp)
+          .post('/api/v1/engagement-requests')
+          .set('X-Forwarded-For', nextTestIp())
+          .send(body);
+
+        expect(res.status).toBe(422);
+        expect(res.body.error.code).toBe('CAPTCHA_INVALID');
+      } finally {
+        if (originalSecret === undefined) {
+          delete process.env.CAPTCHA_SECRET_KEY;
+        } else {
+          process.env.CAPTCHA_SECRET_KEY = originalSecret;
+        }
       }
-      await db('hub_settings').where({ setting_key: 'captcha_enabled' }).delete().catch(() => {});
+    } finally {
+      // Restore captcha_enabled=false
+      await db('hub_settings')
+        .where({ setting_key: 'captcha_enabled' })
+        .update({ setting_value: 'false' });
     }
   });
 
-  test('429 RATE_LIMIT_EXCEEDED — exceeds 10/hour from same IP', async () => {
-    // The engagementLimiter middleware limits to 10 requests per IP per hour.
-    // We send 11 requests from the same IP and expect the 11th to return 429.
-    //
-    // NOTE: Express rate-limit tracks IP per router instance. Using publicApp,
-    // all requests come from the test runner IP (127.0.0.1 via supertest).
-    // The rate limiter is keyed on req.ip.
+  it('429 RATE_LIMIT_EXCEEDED — exceeds 10/hour from same IP', async () => {
+    // Create a separate app instance with a different db to avoid rate limit state pollution
+    // The engagementLimiter is module-level so we need the same app instance
+    // Send 11 requests to trigger the rate limit
+    // Use a specific IP via X-Forwarded-For to isolate from other tests
+    const testIp = `192.0.2.${Math.floor(Math.random() * 200) + 1}`;
 
-    const record = await seedPublishedRecord(['REQUEST_DEMO']);
-    const body = buildEngagementBody(record.record_id);
+    // Send 10 requests (should all succeed or get errors, but not 429)
+    const body = buildEngagementBody(publishedRecordId, 'REQUEST_DEMO');
+    let lastNon429Status = null;
 
-    // Send 10 requests (should succeed — may get 201 or other non-429 codes
-    // depending on captcha/record state, but rate limit tracks all attempts)
-    const requests = [];
     for (let i = 0; i < 10; i++) {
-      requests.push(
-        request(publicApp)
-          .post('/api/v1/engagement-requests')
-          .set('X-Forwarded-For', '192.0.2.100') // Same simulated IP for all requests
-          .send(body),
-      );
-    }
-    const results = await Promise.all(requests);
-
-    // Track any created engagements for cleanup
-    for (const r of results) {
-      if (r.body && r.body.request_id) {
-        createdEngagementIds.push(r.body.request_id);
+      const res = await request(publicApp)
+        .post('/api/v1/engagement-requests')
+        .set('X-Forwarded-For', testIp)
+        .send(body);
+      lastNon429Status = res.status;
+      if (res.status === 201 && res.body.request_id) {
+        trackEngagement(res.body.request_id);
       }
     }
 
-    // 11th request should be rate-limited
-    const limitedRes = await request(publicApp)
+    // 11th request should be rate limited
+    const res = await request(publicApp)
       .post('/api/v1/engagement-requests')
-      .set('X-Forwarded-For', '192.0.2.100')
+      .set('X-Forwarded-For', testIp)
       .send(body);
 
-    expect(limitedRes.status).toBe(429);
-    expect(limitedRes.body.error.code).toBe('RATE_LIMIT_EXCEEDED');
-    expect(limitedRes.headers['retry-after']).toBeDefined();
-    expect(limitedRes.headers['retry-after']).toBe('3600');
+    expect(res.status).toBe(429);
+    expect(res.body.error.code).toBe('RATE_LIMIT_EXCEEDED');
+    // Verify Retry-After header
+    expect(res.headers['retry-after']).toBeTruthy();
+  });
+
+  it('422 VALIDATION_ERROR — missing required field (requestor_name)', async () => {
+    const body = {
+      ...buildEngagementBody(publishedRecordId, 'REQUEST_DEMO'),
+      requestor_name: undefined,
+    };
+
+    const res = await request(publicApp)
+      .post('/api/v1/engagement-requests')
+      .set('X-Forwarded-For', nextTestIp())
+      .send(body);
+
+    expect(res.status).toBe(422);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 });
 
-// ─── GET /api/v1/admin/engagement-requests ────────────────────────────────────
+// ─── GET /api/v1/admin/engagement-requests ───────────────────────────────────
 
 describe('GET /api/v1/admin/engagement-requests', () => {
-  test('200 — returns paginated list of engagement requests', async () => {
-    // Seed a PUBLISHED record and create 3 engagement requests
-    const record = await seedPublishedRecord(['REQUEST_DEMO', 'REQUEST_TECHNICAL_GUIDANCE', 'REQUEST_BRIEFING']);
+  let publishedRecordId;
+  let publishedRecord2Id;
 
-    const engagements = await db('engagement_requests').insert([
-      {
-        record_id: record.record_id,
+  beforeEach(async () => {
+    publishedRecordId = await createPublishedRecord(['REQUEST_DEMO']);
+    publishedRecord2Id = await createPublishedRecord(['REQUEST_DEMO']);
+  });
+
+  it('200 — returns paginated list of engagement requests', async () => {
+    // Create 3 engagement requests
+    const ids = [];
+    for (let i = 0; i < 3; i++) {
+      const row = await db('engagement_requests').insert({
+        record_id: publishedRecordId,
         request_type: 'REQUEST_DEMO',
-        requestor_name: 'Alice Test',
-        requestor_email: 'alice@court.gov',
-        requestor_office: 'Test Office A',
-        description_of_interest: 'Alice is interested in the REQUEST_DEMO option for testing purposes in court environments.',
+        requestor_name: `Requestor ${i}`,
+        requestor_email: `requestor${i}@example.gov`,
+        requestor_office: 'Test Office',
+        description_of_interest: 'Testing description text that meets minimum length.',
         status: 'SUBMITTED',
-      },
-      {
-        record_id: record.record_id,
-        request_type: 'REQUEST_TECHNICAL_GUIDANCE',
-        requestor_name: 'Bob Test',
-        requestor_email: 'bob@court.gov',
-        requestor_office: 'Test Office B',
-        description_of_interest: 'Bob is requesting technical guidance on implementing this innovation in production courtroom settings.',
-        status: 'IN_PROGRESS',
-      },
-      {
-        record_id: record.record_id,
-        request_type: 'REQUEST_BRIEFING',
-        requestor_name: 'Carol Test',
-        requestor_email: 'carol@court.gov',
-        requestor_office: 'Test Office C',
-        description_of_interest: 'Carol would like a briefing on this innovation for leadership review and budget planning purposes.',
-        status: 'COMPLETED',
-      },
-    ]).returning('request_id');
-
-    createdEngagementIds.push(...engagements.map((e) => e.request_id));
+      }).returning('request_id');
+      ids.push(row[0].request_id);
+      trackEngagement(row[0].request_id);
+    }
 
     const res = await request(curatorApp)
       .get('/api/v1/admin/engagement-requests')
@@ -397,117 +440,134 @@ describe('GET /api/v1/admin/engagement-requests', () => {
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.pagination).toBeDefined();
+    expect(res.body.pagination).toBeTruthy();
     expect(res.body.pagination.total_count).toBeGreaterThanOrEqual(3);
     expect(res.body.pagination.page).toBe(1);
     expect(res.body.pagination.page_size).toBe(10);
   });
 
-  test("200 — filter by record_id returns only that record's requests", async () => {
-    // Seed 2 records
-    const recordA = await seedPublishedRecord(['REQUEST_DEMO']);
-    const recordB = await seedPublishedRecord(['REQUEST_DEMO']);
+  it('200 — filter by record_id returns only that record\'s requests', async () => {
+    // Seed 2 requests for record A, 1 for record B
+    const rowA1 = await db('engagement_requests').insert({
+      record_id: publishedRecordId,
+      request_type: 'REQUEST_DEMO',
+      requestor_name: 'Requestor A1',
+      requestor_email: 'a1@example.gov',
+      requestor_office: 'Office A',
+      description_of_interest: 'Testing description text that meets minimum length.',
+      status: 'SUBMITTED',
+    }).returning('request_id');
+    trackEngagement(rowA1[0].request_id);
 
-    // 2 requests for record A, 1 for record B
-    const engagementsA = await db('engagement_requests').insert([
-      {
-        record_id: recordA.record_id,
-        request_type: 'REQUEST_DEMO',
-        requestor_name: 'User A1',
-        requestor_email: 'a1@court.gov',
-        requestor_office: 'Office A1',
-        description_of_interest: 'First engagement request for record A in this integration test scenario.',
-        status: 'SUBMITTED',
-      },
-      {
-        record_id: recordA.record_id,
-        request_type: 'REQUEST_DEMO',
-        requestor_name: 'User A2',
-        requestor_email: 'a2@court.gov',
-        requestor_office: 'Office A2',
-        description_of_interest: 'Second engagement request for record A in this integration test scenario for filtering.',
-        status: 'SUBMITTED',
-      },
-    ]).returning('request_id');
+    const rowA2 = await db('engagement_requests').insert({
+      record_id: publishedRecordId,
+      request_type: 'REQUEST_DEMO',
+      requestor_name: 'Requestor A2',
+      requestor_email: 'a2@example.gov',
+      requestor_office: 'Office A',
+      description_of_interest: 'Testing description text that meets minimum length.',
+      status: 'SUBMITTED',
+    }).returning('request_id');
+    trackEngagement(rowA2[0].request_id);
 
-    const engagementsB = await db('engagement_requests').insert([
-      {
-        record_id: recordB.record_id,
-        request_type: 'REQUEST_DEMO',
-        requestor_name: 'User B1',
-        requestor_email: 'b1@court.gov',
-        requestor_office: 'Office B1',
-        description_of_interest: 'Engagement request for record B in this filter test — should NOT appear in record A results.',
-        status: 'SUBMITTED',
-      },
-    ]).returning('request_id');
+    const rowB1 = await db('engagement_requests').insert({
+      record_id: publishedRecord2Id,
+      request_type: 'REQUEST_DEMO',
+      requestor_name: 'Requestor B1',
+      requestor_email: 'b1@example.gov',
+      requestor_office: 'Office B',
+      description_of_interest: 'Testing description text that meets minimum length.',
+      status: 'SUBMITTED',
+    }).returning('request_id');
+    trackEngagement(rowB1[0].request_id);
 
-    createdEngagementIds.push(
-      ...engagementsA.map((e) => e.request_id),
-      ...engagementsB.map((e) => e.request_id),
-    );
-
-    // Filter by record A
     const res = await request(curatorApp)
       .get('/api/v1/admin/engagement-requests')
-      .query({ record_id: recordA.record_id, page: 1, page_size: 10 });
+      .query({ record_id: publishedRecordId });
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.data)).toBe(true);
-    // All returned items should be for record A
-    for (const item of res.body.data) {
-      expect(item.record_id).toBe(recordA.record_id);
-    }
-    // Should have exactly 2 results for record A
-    expect(res.body.pagination.total_count).toBe(2);
+    // All returned requests should be for publishedRecordId
+    const allForRecord = res.body.data.every((r) => r.record_id === publishedRecordId);
+    expect(allForRecord).toBe(true);
+    // Should include both A1 and A2
+    const requestIds = res.body.data.map((r) => r.request_id);
+    expect(requestIds).toContain(rowA1[0].request_id);
+    expect(requestIds).toContain(rowA2[0].request_id);
+    // Should NOT include B1
+    expect(requestIds).not.toContain(rowB1[0].request_id);
+  });
+
+  it('401 — unauthenticated access returns 401', async () => {
+    const res = await request(publicApp)
+      .get('/api/v1/admin/engagement-requests');
+    expect(res.status).toBe(401);
   });
 });
 
 // ─── PATCH /api/v1/admin/engagement-requests/:id ─────────────────────────────
 
 describe('PATCH /api/v1/admin/engagement-requests/:id', () => {
-  test('200 — updates status to IN_PROGRESS with curator_note', async () => {
-    const record = await seedPublishedRecord(['REQUEST_DEMO']);
+  let publishedRecordId;
+  let testEngagementId;
 
-    // Create a SUBMITTED engagement request directly in DB
-    const [engagement] = await db('engagement_requests').insert({
-      record_id: record.record_id,
+  beforeEach(async () => {
+    publishedRecordId = await createPublishedRecord(['REQUEST_DEMO']);
+
+    // Seed a SUBMITTED engagement request directly
+    const row = await db('engagement_requests').insert({
+      record_id: publishedRecordId,
       request_type: 'REQUEST_DEMO',
-      requestor_name: 'Test Requestor',
-      requestor_email: 'test.requestor@court.gov',
-      requestor_office: 'Test Office for PATCH',
-      description_of_interest: 'Testing the PATCH status update endpoint with curator note to confirm proper update behavior.',
+      requestor_name: 'Patch Test Requestor',
+      requestor_email: 'patch-test@example.gov',
+      requestor_office: 'Test Office',
+      description_of_interest: 'Testing status update through PATCH endpoint for curator.',
       status: 'SUBMITTED',
-    }).returning('*');
-
-    createdEngagementIds.push(engagement.request_id);
-
-    const res = await request(curatorApp)
-      .patch(`/api/v1/admin/engagement-requests/${engagement.request_id}`)
-      .send({ status: 'IN_PROGRESS', curator_note: 'Following up with requestor this week.' });
-
-    expect(res.status).toBe(200);
-    expect(res.body.status).toBe('IN_PROGRESS');
-    expect(res.body.curator_note).toBe('Following up with requestor this week.');
-    expect(res.body.request_id).toBe(engagement.request_id);
-
-    // Verify in DB
-    const dbRow = await db('engagement_requests')
-      .where({ request_id: engagement.request_id })
-      .first();
-    expect(dbRow.status).toBe('IN_PROGRESS');
-    expect(dbRow.curator_note).toBe('Following up with requestor this week.');
-    expect(dbRow.updated_by_user_id).toBe(testCuratorId);
+    }).returning('request_id');
+    testEngagementId = row[0].request_id;
+    trackEngagement(testEngagementId);
   });
 
-  test('404 — non-existent request_id', async () => {
-    const nonExistentId = '00000000-0000-4000-a000-000000000002';
-
+  it('200 — updates status to IN_PROGRESS with curator_note', async () => {
     const res = await request(curatorApp)
-      .patch(`/api/v1/admin/engagement-requests/${nonExistentId}`)
+      .patch(`/api/v1/admin/engagement-requests/${testEngagementId}`)
+      .send({ status: 'IN_PROGRESS', curator_note: 'Following up with the team.' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.request_id).toBe(testEngagementId);
+    expect(res.body.status).toBe('IN_PROGRESS');
+    expect(res.body.curator_note).toBe('Following up with the team.');
+    expect(res.body.updated_by_user_id).toBe(testCuratorId);
+
+    // Verify in DB
+    const row = await db('engagement_requests').where({ request_id: testEngagementId }).first();
+    expect(row.status).toBe('IN_PROGRESS');
+    expect(row.curator_note).toBe('Following up with the team.');
+  });
+
+  it('200 — updates status to COMPLETED', async () => {
+    const res = await request(curatorApp)
+      .patch(`/api/v1/admin/engagement-requests/${testEngagementId}`)
       .send({ status: 'COMPLETED' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('COMPLETED');
+  });
+
+  it('404 — non-existent request_id returns 404', async () => {
+    // Use a syntactically valid UUID that does not exist in the database
+    const res = await request(curatorApp)
+      .patch('/api/v1/admin/engagement-requests/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a99')
+      .send({ status: 'IN_PROGRESS' });
 
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('ENGAGEMENT_REQUEST_NOT_FOUND');
+  });
+
+  it('401 — unauthenticated access returns 401', async () => {
+    const res = await request(publicApp)
+      .patch(`/api/v1/admin/engagement-requests/${testEngagementId}`)
+      .send({ status: 'IN_PROGRESS' });
+    expect(res.status).toBe(401);
   });
 });

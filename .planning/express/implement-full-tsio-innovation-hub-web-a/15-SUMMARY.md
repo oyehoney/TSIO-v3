@@ -1,202 +1,214 @@
 ---
 phase: implement-full-tsio-innovation-hub-web-a
 plan: 15
-subsystem: admin-lifecycle-controls
-tags: [lifecycle, confirmation-dialog, governance-gate, maturity-dropdowns, admin-ui, F8, F9]
-
+subsystem: admin-frontend-lifecycle
+tags: [react, typescript, tailwind, playwright, lifecycle, governance, admin]
 dependency_graph:
   requires:
-    - "05-PLAN.md: publicationLifecycleService.js (VALID_TRANSITIONS, transition())"
-    - "05-PLAN.md: governanceGateService.js (validate(), PUB_REQUIRED_FIELDS)"
-    - "05-PLAN.md: recordHandler.js (POST submit-review, publish, supersede, archive; PATCH edit)"
-    - "06-PLAN.md: requireCurator middleware (session auth on all admin routes)"
+    - plan-05: publicationLifecycleService, governanceGateService, recordHandler lifecycle endpoints
+    - plan-14: AdminApp routing, AdminShell, ReadinessChecklist, PublicationStateChip
   provides:
-    - "PublicationLifecycleControls component — state-aware action buttons for Wave 7 integration"
-    - "ConfirmationDialog component — reusable for Edit/Archive/Supersede transitions"
-    - "GovernanceGateFeedback component — PUBLICATION_GATE_FAILED error display"
-    - "MaturityLevelDropdown + ReviewStatusDropdown — inline definitions per US-9.3"
-    - "RecordEditPage — integrated full admin edit form with all lifecycle controls"
+    - PublicationLifecycleControls: state-aware action buttons for all 5 publication states
+    - ConfirmationDialog: reusable modal for Edit Published/Archive/Supersede transitions
+    - GovernanceGateFeedback: inline error panel for PUBLICATION_GATE_FAILED 422 responses
+    - MaturityLevelDropdown + ReviewStatusDropdown: controlled dropdowns with inline definitions
+    - RecordEditPage: fully integrated edit/create form with lifecycle controls
   affects:
-    - "Wave 7: end-to-end lifecycle validation uses these controls"
-
+    - plan-16: admin supporting pages (uses same AdminShell, routing conventions)
 tech_stack:
   added: []
   patterns:
-    - "React controlled components with useCallback for stable handlers"
-    - "Separation of dialog state (activeDialog enum) from business logic in PublicationLifecycleControls"
-    - "FIELD_LABELS map for safe XSS-free rendering of API field names (T-15-02)"
-    - "credentials: 'same-origin' on all lifecycle API calls (T-15-04)"
-    - "blockingFields state distinct from governanceErrors for dual-path error display"
-
+    - React functional components with TypeScript
+    - Tailwind CSS for Plan 15 components (inline styles for Plan 14 RecordEditPage shell)
+    - Playwright e2e tests with page.route() API mocking (no live backend required)
+    - Direct fetch() to /api/v1/records/:id endpoints (corrected from adminApiClient)
 key_files:
   created:
-    - "src/admin/components/ConfirmationDialog.tsx"
-    - "src/admin/components/GovernanceGateFeedback.tsx"
-    - "src/admin/components/MaturityStatusDropdowns.tsx"
-    - "src/admin/components/PublicationLifecycleControls.tsx"
-    - "e2e/admin/record-lifecycle-controls.spec.ts"
+    - client/src/admin/components/ConfirmationDialog.tsx
+    - client/src/admin/components/GovernanceGateFeedback.tsx
+    - client/src/admin/components/MaturityStatusDropdowns.tsx
+    - client/src/admin/components/PublicationLifecycleControls.tsx
+    - client/e2e/admin/record-lifecycle-controls.spec.ts
+    - client/src/pages/admin/EngagementActivityPage.tsx (stub, unblocks TSC)
+    - client/src/pages/admin/SettingsPage.tsx (stub, unblocks TSC)
+    - client/src/pages/admin/ContentModelReferencePage.tsx (stub, unblocks TSC)
+    - client/src/admin/pages/RecordsListPage.tsx (stub, unblocks TSC)
   modified:
-    - "src/admin/pages/RecordEditPage.tsx"
-    - "src/admin/components/ReadinessChecklist.tsx"
-
+    - client/src/admin/pages/RecordEditPage.tsx
 decisions:
-  - "canSubmitForReview computed client-side from 17 pub-required fields via getMissingPubRequiredFields; Submit for Review disabled as UI convenience only — GovernanceGateService is the authoritative server-side gate (T-15-01)"
-  - "GovernanceGateFeedback renders blockingFields via FIELD_LABELS hard-coded map — all field names are known enum strings from GovernanceGateService, never user-authored content, so no dangerouslySetInnerHTML risk (T-15-02)"
-  - "ConfirmationDialog reused for all 3 irreversible transitions (Edit/Archive/Supersede) via props; supersede=true variant adds linked_record_id input with required validation before API call"
-  - "ARCHIVED maturity advisory (data-testid='archived-maturity-advisory') shown when maturity=ARCHIVED on a PUBLISHED record per US-9.3 AC"
-  - "Hard-coded MATURITY_DEFINITIONS and REVIEW_STATUS_DEFINITIONS in MaturityStatusDropdowns — requires code change to update per TechArch §5.6 rule 2; consistent with ContentModelReferencePage pattern"
-  - "blockingFields state added to RecordEditPage to support GovernanceGateFeedback from PublicationLifecycleControls callback; legacy governanceErrors kept for inline transition handler path"
-  - "publicationStateTyped (PublicationState union type) added alongside form.publication_state string to give PublicationLifecycleControls proper type safety"
-
+  - "canSubmitForReview computed from Plan 14 ReadinessChecklist (50+ char minimums) not simple non-empty check"
+  - "GovernanceGateFeedback blockingFields accepts field keys (snake_case); FIELD_LABELS map provides human-readable names"
+  - "ConfirmationDialog reused for Edit Published, Archive, and Supersede via supersede prop variant"
+  - "ARCHIVED maturity advisory shown when maturity_level=ARCHIVED AND publication_state=PUBLISHED (US-9.3 AC)"
+  - "RecordEditPage API calls use /api/v1/records/:id (direct fetch) per actual backend route contracts, not /api/v1/admin/records/:id (NOT_IMPLEMENTED)"
 metrics:
-  duration: "~45 minutes"
-  completed_date: "2026-08-02"
-  tasks_completed: 2
-  tasks_total: 2
-  files_created: 5
-  files_modified: 2
+  duration: ~45 minutes
+  completed: "2026-08-03"
+  tasks: 2
+  files: 9
 ---
 
-# Phase implement-full-tsio-innovation-hub-web-a Plan 15: Lifecycle Action Controls Summary
+# Phase implement-full-tsio-innovation-hub-web-a Plan 15: Publication Lifecycle Controls Summary
 
-**One-liner:** Lifecycle action buttons (Submit for Review, Publish, Archive, Supersede, Edit) + confirmation dialogs + GovernanceGate feedback + MaturityLevel/ReviewStatus dropdowns with inline definitions — all wired into RecordEditPage.
+**One-liner:** Lifecycle action button bar (Submit/Publish/Supersede/Archive/Edit), ConfirmationDialog modals, GovernanceGateFeedback error panel, and MaturityLevel/ReviewStatus dropdowns with inline definitions — all integrated into RecordEditPage with 21 passing Playwright tests.
 
 ## Tasks Completed
 
-### Task 1: Component files — all 4 created
+### Task 1: Publication lifecycle controls — PublicationLifecycleControls, ConfirmationDialog, GovernanceGateFeedback, MaturityStatusDropdowns
 
-| File | Exports | Status |
-|------|---------|--------|
-| `src/admin/components/ConfirmationDialog.tsx` | `ConfirmationDialog`, `ConfirmationDialogVariant` | ✅ |
-| `src/admin/components/GovernanceGateFeedback.tsx` | `GovernanceGateFeedback` | ✅ |
-| `src/admin/components/MaturityStatusDropdowns.tsx` | `MaturityLevelDropdown`, `ReviewStatusDropdown`, `MATURITY_DEFINITIONS`, `REVIEW_STATUS_DEFINITIONS` | ✅ |
-| `src/admin/components/PublicationLifecycleControls.tsx` | `PublicationLifecycleControls`, `PublicationState` | ✅ |
+**Commit:** `49e484e`
 
-### Task 2: RecordEditPage integration + e2e tests
+Created four React TypeScript components in `client/src/admin/components/`:
 
-| File | Change | Status |
-|------|--------|--------|
-| `src/admin/pages/RecordEditPage.tsx` | Integrated all 4 new components; replaced inline action bar with PublicationLifecycleControls; replaced maturity/review dropdowns with new components; replaced inline warning modal with ConfirmationDialog; added blockingFields state + lifecycle callbacks; added data-testid attrs | ✅ |
-| `src/admin/components/ReadinessChecklist.tsx` | Added `data-testid="readiness-checklist"` to root element for e2e selector | ✅ |
-| `e2e/admin/record-lifecycle-controls.spec.ts` | 21 Playwright tests covering all 5 publication states, all dialogs, governance gate feedback, maturity/review definitions, ARCHIVED advisory, Submit for Review disabled-when-incomplete | ✅ |
+- **`ConfirmationDialog.tsx`** — Reusable modal with `role="dialog"` aria-modal, focus management on cancel button, and a supersede variant that renders a `linked_record_id` input with required validation. Used for Edit Published (danger), Archive (danger), and Supersede transitions.
 
-## Key Design Decisions
+- **`GovernanceGateFeedback.tsx`** — Inline error panel with `aria-live="polite"` and `role="alert"`. Renders `⛔ Cannot publish — missing required fields:` with a list of human-readable field names mapped from the 18+ API field keys (snake_case → label via `FIELD_LABELS` map). Returns null when `blockingFields` is empty.
 
-### 1. `canSubmitForReview` — client-side convenience gating
-`canSubmitForReview` is computed from `getMissingPubRequiredFields(form)` — same field set as `GovernanceGateService.PUB_REQUIRED_FIELDS`. It disables the Submit for Review button as a UI convenience only. The server-side governance gate is always authoritative. This is documented in T-15-01.
+- **`MaturityStatusDropdowns.tsx`** — `MaturityLevelDropdown` (5 options) and `ReviewStatusDropdown` (7 options). Each renders an inline definition for the selected value below the dropdown with a `View all definitions →` link to `/admin/content-model`. Includes `data-testid="archived-maturity-advisory"` panel when maturity=ARCHIVED and publication_state=PUBLISHED (US-9.3 AC).
 
-### 2. `GovernanceGateFeedback` — FIELD_LABELS safe rendering
-API field names (e.g. `executive_perspective_text`) are mapped to human-readable labels via the `FIELD_LABELS` record. All keys are known GovernanceGateService enum field names, never user-authored content. React JSX escapes all string output — no XSS risk.
+- **`PublicationLifecycleControls.tsx`** — State machine-driven action buttons: DRAFT (Submit for Review ▶ + Save Draft), REVIEW (Return to Draft + Publish ▶ + Save Draft), PUBLISHED (Edit + Supersede + Archive), SUPERSEDED (Archive only), ARCHIVED (read-only message). Submit for Review disabled when `!canSubmitForReview`. Calls `/api/v1/records/:id/submit-review`, `/publish`, `/return-to-draft`, `/supersede`, `/archive` directly via fetch. Fires `onTransitionSuccess(newState, publishedAt?)` or `onTransitionError(code, blockingFields?)`. All buttons have `data-testid` attributes.
 
-### 3. `ConfirmationDialog` — one component, three use cases
-The same `ConfirmationDialog` component handles: (1) Edit Published Record warning, (2) Archive confirmation, and (3) Supersede with `supersede={true}` variant that adds the `linked_record_id` text input with required validation before API call.
+Also created stub pages to unblock TypeScript compilation:
+- `RecordsListPage.tsx`, `EngagementActivityPage.tsx`, `SettingsPage.tsx`, `ContentModelReferencePage.tsx`
 
-### 4. `ARCHIVED` maturity advisory
-`MaturityLevelDropdown` shows the advisory banner `data-testid="archived-maturity-advisory"` when `value === 'ARCHIVED'` and `publicationState === 'PUBLISHED'`, per US-9.3 AC.
+### Task 2: RecordEditPage integration + Playwright e2e lifecycle tests
 
-### 5. Dual state-tracking in RecordEditPage
-`publicationStateTyped` (typed `PublicationState`) mirrors `form.publication_state` (string) to give `PublicationLifecycleControls` proper TypeScript type safety. Both are updated on every transition.
+**Commit:** `0dd18e4`
 
-### 6. `blockingFields` vs `governanceErrors`
-`blockingFields` (from lifecycle API 422 response) feeds `GovernanceGateFeedback`. `governanceErrors` (from legacy inline transition handler) feeds the existing inline error banner. Both paths coexist during the integration wave.
+**RecordEditPage integration:**
+
+Updated the existing Plan 14 `RecordEditPage.tsx` (1520 lines) to integrate Plan 15 components:
+
+1. **Import updates:** Removed `adminApiClient` import; added `PublicationLifecycleControls`, `GovernanceGateFeedback`, `MaturityLevelDropdown`, `ReviewStatusDropdown` imports.
+
+2. **API fix (Rule 1 deviation):** Replaced `adminApiClient.getRecord(id)` (calls `/api/v1/admin/records/:id` — NOT_IMPLEMENTED in backend) with direct `fetch('/api/v1/records/${id}')`. Replaced `adminApiClient.createRecord/updateRecord` with direct fetch to `/api/v1/records`. The backend has these routes implemented via Plan 05's `recordHandler.js`.
+
+3. **Lifecycle transition handlers:** Replaced `adminApiClient.transitionRecord()` (calls non-existent `/api/v1/admin/records/:id/lifecycle`) with `handleTransitionSuccess`/`handleTransitionError` callbacks passed to `PublicationLifecycleControls` which calls the correct individual endpoints.
+
+4. **Component replacement:** Replaced inline GovernanceGate error display with `<GovernanceGateFeedback blockingFields={governanceError ?? []} />`. Replaced inline maturity/review dropdowns with `<MaturityLevelDropdown>` and `<ReviewStatusDropdown>`. Replaced inline action buttons with `<PublicationLifecycleControls>`.
+
+5. **Testid additions:** Added `data-testid="publication-state-badge"` wrapper around `PublicationStateChip`, `data-testid="readiness-checklist"` on sidebar, `data-testid="save-error"` on API error banner.
+
+**Playwright e2e tests (`client/e2e/admin/record-lifecycle-controls.spec.ts`):**
+
+21 tests across 6 describe blocks — **all 21 pass**:
+- DRAFT state: renders Submit/Save Draft, enabled when all fields complete, transitions to REVIEW
+- REVIEW state: renders Publish/Return to Draft, success updates badge, 422 PUBLICATION_GATE_FAILED shows GovernanceGateFeedback with correct field labels
+- PUBLISHED state: Edit/Supersede/Archive visible (not Submit), Edit opens warning modal, confirm transitions to REVIEW, cancel keeps PUBLISHED, Archive confirmation + endpoint call, Supersede requires linked_record_id
+- SUPERSEDED state: only Archive visible
+- ARCHIVED state: read-only message, no action buttons
+- Maturity/Review dropdowns: inline definitions, "View all maturity definitions →" links, ARCHIVED advisory
+- Publication Readiness Checklist: Submit disabled when missing, count displays correctly
+
+## Files Created
+
+| File | Purpose |
+|------|---------|
+| `client/src/admin/components/ConfirmationDialog.tsx` | Reusable modal for Edit/Archive/Supersede |
+| `client/src/admin/components/GovernanceGateFeedback.tsx` | Inline PUBLICATION_GATE_FAILED error panel |
+| `client/src/admin/components/MaturityStatusDropdowns.tsx` | Maturity + review status dropdowns with inline definitions |
+| `client/src/admin/components/PublicationLifecycleControls.tsx` | State-aware action button bar |
+| `client/e2e/admin/record-lifecycle-controls.spec.ts` | 21 Playwright tests — all pass |
+| `client/src/admin/pages/RecordsListPage.tsx` | Stub (unblocks TSC for AdminApp imports) |
+| `client/src/pages/admin/EngagementActivityPage.tsx` | Stub (unblocks TSC for AdminApp imports) |
+| `client/src/pages/admin/SettingsPage.tsx` | Stub (unblocks TSC for AdminApp imports) |
+| `client/src/pages/admin/ContentModelReferencePage.tsx` | Stub (unblocks TSC for AdminApp imports) |
+
+## Files Modified
+
+| File | Changes |
+|------|---------|
+| `client/src/admin/pages/RecordEditPage.tsx` | Integrated Plan 15 components; fixed API calls from adminApiClient to direct fetch |
+| `client/src/admin/components/MaturityStatusDropdowns.tsx` | Fixed aria-label to match Playwright accessible name regex |
+
+## Deviations from Plan
+
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Fixed RecordEditPage API calls using non-existent admin endpoints**
+- **Found during:** Task 2
+- **Issue:** Plan 14's RecordEditPage used `adminApiClient.getRecord()` (calls `/api/v1/admin/records/:id`), `adminApiClient.createRecord/updateRecord`, and `adminApiClient.transitionRecord()` (calls `/api/v1/admin/records/:id/lifecycle`). These admin-prefixed endpoints are NOT_IMPLEMENTED in the backend — the actual implemented endpoints are at `/api/v1/records/:id` per Plan 05's `recordHandler.js`.
+- **Fix:** Replaced all `adminApiClient` data/lifecycle calls with direct `fetch()` calls to the correct `/api/v1/records/:id` endpoints.
+- **Files modified:** `client/src/admin/pages/RecordEditPage.tsx`
+- **Commit:** `0dd18e4`
+
+**2. [Rule 3 - Blocking] Created stub pages to unblock TypeScript compilation**
+- **Found during:** Task 1 verification
+- **Issue:** Plan 14's AdminApp.tsx imports `EngagementActivityPage`, `SettingsPage`, `ContentModelReferencePage` from `../pages/admin/` — these are Plan 16 artifacts that don't yet exist. TypeScript compilation failed.
+- **Fix:** Created minimal stub implementations for all three pages.
+- **Files modified:** 3 new stub pages
+- **Commit:** `49e484e`
+
+**3. [Rule 1 - Bug] Fixed aria-label conflicting with Playwright accessible name matching**
+- **Found during:** Task 2 Playwright test run
+- **Issue:** `MaturityLevelDropdown` had `aria-label="View all maturity level definitions"` on the link, but Playwright's `getByRole('link', {name: /view all maturity definitions/i})` couldn't match it (regex didn't match "level" suffix).
+- **Fix:** Removed conflicting aria-label so accessible name derives from visible text ("View all maturity definitions →") which matches the regex.
+- **Files modified:** `client/src/admin/components/MaturityStatusDropdowns.tsx`
+- **Commit:** `0dd18e4`
+
+**4. [Rule 1 - Bug] Updated mock data in Playwright tests to meet ReadinessChecklist 50-char minimums**
+- **Found during:** Task 2 Playwright test run  
+- **Issue:** Plan 14's `ReadinessChecklist` requires 50+ characters for `problem_statement`, `what_was_explored`, `outcome_summary`, `executive_perspective_text`, `executive_recommendation`. The initial test mock used short values, causing unexpected checklist failures.
+- **Fix:** Updated all text fields in `mockRecord()` helper to use 50+ character values.
+- **Files modified:** `client/e2e/admin/record-lifecycle-controls.spec.ts`
+- **Commit:** `0dd18e4`
 
 ## Integration Contracts Provided to Wave 7
 
-### `PublicationLifecycleControls`
-```tsx
+```typescript
+// PublicationLifecycleControls — exported from client/src/admin/components/PublicationLifecycleControls.tsx
 PublicationLifecycleControls({
   publicationState: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'SUPERSEDED' | 'ARCHIVED',
   recordId: string,
-  canSubmitForReview: boolean,
+  canSubmitForReview: boolean,  // from ReadinessChecklist.getMissingPubRequiredFields()
   isSaving?: boolean,
   onSaveDraft?: () => Promise<void>,
   onTransitionSuccess: (newState: string, publishedAt?: string) => void,
   onTransitionError: (code: string, blockingFields?: string[]) => void,
 })
-```
-Renders correct button set per state; calls lifecycle endpoints with `credentials: 'same-origin'`.
 
-### `ConfirmationDialog`
-```tsx
-ConfirmationDialog({
-  open: boolean,
-  title: string,
-  body: React.ReactNode,
-  confirmLabel: string,
-  cancelLabel?: string,
-  variant?: 'default' | 'danger',
-  onConfirm: (data?: Record<string, string>) => void,
-  onCancel: () => void,
-  supersede?: true,  // adds linked_record_id input
-})
-```
+// GovernanceGateFeedback — exported from client/src/admin/components/GovernanceGateFeedback.tsx
+GovernanceGateFeedback({ blockingFields: string[] })  // field keys from PUBLICATION_GATE_FAILED
 
-### `GovernanceGateFeedback`
-```tsx
-GovernanceGateFeedback({ blockingFields: string[] })
-// Returns null when blockingFields is empty
-// Maps API field names to human-readable labels via FIELD_LABELS
-```
-
-### `MaturityLevelDropdown` + `ReviewStatusDropdown`
-```tsx
+// MaturityLevelDropdown — exported from client/src/admin/components/MaturityStatusDropdowns.tsx
 MaturityLevelDropdown({ value, onChange, publicationState?, disabled?, error? })
+
+// ReviewStatusDropdown — exported from client/src/admin/components/MaturityStatusDropdowns.tsx
 ReviewStatusDropdown({ value, onChange, disabled?, error? })
-// Each shows inline definition for selected value + 'View all definitions →' link
+
+// ConfirmationDialog — exported from client/src/admin/components/ConfirmationDialog.tsx
+ConfirmationDialog({ open, title, body, confirmLabel, cancelLabel?, variant?, onConfirm, onCancel })
+// Supersede variant: <ConfirmationDialog supersede ... /> adds linked_record_id input
 ```
-
-## Verification Results
-
-| Check | Command | Result |
-|-------|---------|--------|
-| All 6 target files exist | `ls src/admin/components/*.tsx e2e/admin/*.spec.ts` | ✅ PASS |
-| All state button testids present | `grep -c data-testid="*-btn"` (6 buttons) | ✅ 6 found |
-| GovernanceGateFeedback field labels | `grep -c executive_perspective_text\|last_reviewed_date\|...` | ✅ 5 matches |
-| MaturityStatusDropdowns has all definitions | `grep -c EXPERIMENT_POC\|PROTOTYPE_PILOT\|...` | ✅ 5 matches |
-| RecordEditPage integration | `grep -n PublicationLifecycleControls\|GovernanceGateFeedback\|...` | ✅ INTEGRATION_OK |
-| All contracts verified | `grep -n` contract checks | ✅ All CONTRACT_OK |
-| TypeScript type check | `npm run build` (tsc --noEmit) | ✅ No errors |
-| Playwright e2e tests | `npx playwright test e2e/admin/record-lifecycle-controls.spec.ts` | ⚠️ See Deferred Issues |
-
-## Deferred Issues
-
-### Browser E2E deferred — missing system library in sandbox
-
-**Command:** `npx playwright test e2e/admin/record-lifecycle-controls.spec.ts`
-**Error:** `chrome-headless-shell: error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file: No such file or directory`
-**Root cause:** `libglib-2.0.so.0` is missing from the execution environment. This is a pre-existing sandbox infrastructure issue — verified that all other existing e2e specs (catalog.spec.ts, admin-core.spec.ts) fail with the same error.
-**Impact:** Tests are syntactically and logically correct. TypeScript build passes. Tests will pass when run in the Wave 7 verify environment with full system library support.
-**Classification:** Environment issue — not a code defect.
 
 ## Known Stubs
 
-**None found.** All handlers call real API endpoints with `credentials: 'same-origin'`. No hardcoded responses. No TODOs or FIXMEs in created files (a `placeholder` attribute on the supersede input field is a UX label, not a stub).
+**None found in Plan 15 deliverables.** All components implement real behavior.
 
-## Deviations from Plan
-
-### Auto-fixed (Rule 2): Added `data-testid` to ReadinessChecklist
-
-- **Found during:** Task 2 (wiring e2e tests)
-- **Issue:** `ReadinessChecklist` component had no `data-testid` attribute; e2e tests use `[data-testid="readiness-checklist"]` to verify checklist content and incomplete count
-- **Fix:** Added `data-testid="readiness-checklist"` to the root `<div>` of `ReadinessChecklist`
-- **Files modified:** `src/admin/components/ReadinessChecklist.tsx`
-
-### Auto-handled (Rule 2): Dual error-display paths in RecordEditPage
-
-- **Found during:** Task 2 (integration)
-- **Issue:** Existing `RecordEditPage.tsx` had an inline governance error banner (`governanceErrors`). The new `GovernanceGateFeedback` component needs its own `blockingFields` state fed from the lifecycle API response.
-- **Fix:** Added `blockingFields` state + `handleLifecycleTransitionSuccess`/`handleLifecycleTransitionError` callbacks. Kept legacy `governanceErrors` for the existing inline transition handler. `GovernanceGateFeedback` renders from `blockingFields` (API-driven) only.
-- **Files modified:** `src/admin/pages/RecordEditPage.tsx`
-
-### Note: Warning modal path
-
-The existing `RecordEditPage` had an inline warning modal for editing published records. Since `PublicationLifecycleControls` now handles this dialog internally, the legacy `showWarningModal` state + `handleEditPublished` path was replaced with a `ConfirmationDialog` rendering, keeping backward compatibility. The `handleEditPublished` callback is no longer triggered from the external path (it was previously triggered by a button that no longer exists outside `PublicationLifecycleControls`), but `showWarningModal` is retained for safety.
+**Cosmetic stubs (in supporting files):**
+- `client/src/admin/pages/RecordsListPage.tsx` — stub list page (Plan 14 responsibility). Does not affect Plan 15 lifecycle controls.
+- `client/src/pages/admin/EngagementActivityPage.tsx` — stub (Plan 16 responsibility).
+- `client/src/pages/admin/SettingsPage.tsx` — stub (Plan 16 responsibility).
+- `client/src/pages/admin/ContentModelReferencePage.tsx` — stub (Plan 16 responsibility).
 
 ## Self-Check: PASSED
 
-- ✅ All 6 target files exist and have correct content
-- ✅ All 4 component contracts verified (grep checks pass)
-- ✅ RecordEditPage integration verified (all imports + usages present)
-- ✅ TypeScript build passes (`npm run build` → no errors)
-- ✅ No blocking stubs found
-- ⚠️ Playwright e2e tests deferred: missing `libglib-2.0.so.0` system library in sandbox (pre-existing environment issue, not a code defect)
+**Files created/exist:**
+- ✅ `client/src/admin/components/ConfirmationDialog.tsx`
+- ✅ `client/src/admin/components/GovernanceGateFeedback.tsx`
+- ✅ `client/src/admin/components/MaturityStatusDropdowns.tsx`
+- ✅ `client/src/admin/components/PublicationLifecycleControls.tsx`
+- ✅ `client/src/admin/pages/RecordEditPage.tsx`
+- ✅ `client/e2e/admin/record-lifecycle-controls.spec.ts`
+
+**Commits exist:**
+- ✅ `49e484e`: feat(implement-full-tsio-innovation-hub-web-a-15): add lifecycle action control components
+- ✅ `0dd18e4`: feat(implement-full-tsio-innovation-hub-web-a-15): integrate lifecycle controls into RecordEditPage + Playwright tests
+
+**Build check:** `npm run build` → exit 0 (vite build successful, 103 modules)
+
+**TypeScript:** `tsc --noEmit` → exit 0
+
+**Playwright tests:** 21/21 pass
+
+**Known Stubs section:** Present — none blocking.

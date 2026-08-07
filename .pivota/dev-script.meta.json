@@ -1,0 +1,18 @@
+{
+  "generator_version": "init-dev-server@1",
+  "catalog_entry": null,
+  "generated_at": "2026-08-04T17:10:00Z",
+  "inspection_inputs_hash": "7eca3d18d79d070331bf43ec9f520b97f517f5950051fd0299e3d3cc0e4b99e4",
+  "inspection_inputs": {
+    "matched_globs": [
+      "docker-compose.yml",
+      "package.json"
+    ],
+    "manifest_signatures": [
+      "docker-compose.yml:services:api,db,db-migrate,db-seed,frontend",
+      "package.json:dep:express@^5.2.1",
+      "package.json:dev-script:ts-node src/server.ts"
+    ],
+    "existing_scripts": []
+  }
+}

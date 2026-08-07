@@ -3,141 +3,143 @@
 /**
  * engagement.handler.js
  *
- * HTTP handlers for EngagementService endpoints.
+ * HTTP request handlers for engagement endpoints:
+ *   POST /api/v1/engagement-requests (PUBLIC)
+ *   GET /api/v1/admin/engagement-requests (CURATOR)
+ *   PATCH /api/v1/admin/engagement-requests/:request_id (CURATOR)
+ *
  * Maps service results and errors to HTTP responses per TechArch §4.1 error envelope:
  *   { "error": { "code": "...", "message": "..." } }
- *
- * Endpoints:
- *   POST   /api/v1/engagement-requests           — PUBLIC (no auth)
- *   GET    /api/v1/admin/engagement-requests      — CURATOR (auth at route level)
- *   PATCH  /api/v1/admin/engagement-requests/:id — CURATOR (auth at route level)
  */
 
-const engagementService = require('../services/engagement.service');
+const EngagementService = require('../services/engagement.service');
 
 /**
- * Error code → HTTP status map.
- * Drives the handleError utility below.
- */
-const ERROR_STATUS_MAP = {
-  RECORD_NOT_FOUND: 404,
-  ENGAGEMENT_REQUEST_NOT_FOUND: 404,
-  INVALID_ENGAGEMENT_TYPE: 422,
-  CAPTCHA_INVALID: 422,
-  VALIDATION_ERROR: 422,
-  RATE_LIMIT_EXCEEDED: 429,
-};
-
-/**
- * Map a service-layer error to an HTTP response.
- * Falls back to 500 for unknown errors.
+ * Extract client IP address from request.
+ * Handles X-Forwarded-For (proxy/load balancer) and falls back to req.ip.
  *
- * @param {Error} err
- * @param {import('express').Response} res
+ * @param {import('express').Request} req
+ * @returns {string}
  */
-function handleError(err, res) {
-  if (err && err.code && ERROR_STATUS_MAP[err.code] !== undefined) {
-    const status = err.status || ERROR_STATUS_MAP[err.code];
-    const body = { error: { code: err.code, message: err.message || err.code } };
-    if (err.fields) {
-      body.error.fields = err.fields;
-    }
-    return res.status(status).json(body);
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    // X-Forwarded-For: client, proxy1, proxy2 — take the first (leftmost) address
+    return forwarded.split(',')[0].trim();
   }
+  return req.ip || '127.0.0.1';
+}
 
-  // Unknown error — log and return 500
-  console.error('Unhandled engagement service error:', err);
-  return res.status(500).json({
-    error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' },
-  });
+/**
+ * Map service error to HTTP status code.
+ * @param {{ status?: number, code?: string }} err
+ * @returns {number}
+ */
+function getErrorStatus(err) {
+  if (err && err.status) return err.status;
+  const CODE_TO_STATUS = {
+    RECORD_NOT_FOUND: 404,
+    INVALID_ENGAGEMENT_TYPE: 422,
+    CAPTCHA_INVALID: 422,
+    VALIDATION_ERROR: 422,
+    INVALID_STATUS: 422,
+    ENGAGEMENT_REQUEST_NOT_FOUND: 404,
+    RATE_LIMIT_EXCEEDED: 429,
+  };
+  if (err && err.code && CODE_TO_STATUS[err.code]) {
+    return CODE_TO_STATUS[err.code];
+  }
+  return 500;
 }
 
 /**
  * POST /api/v1/engagement-requests — PUBLIC (no auth required)
- *
- * Extracts IP from X-Forwarded-For (proxy) or req.ip.
- * Rate limiting is handled by engagementLimiter middleware at the route level.
- * On 429 from rate limiter, the middleware handles the response directly (not this handler).
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * Rate limiter applied at route level (engagementLimiter: 10/hr per IP).
  */
 async function createEngagementRequest(req, res) {
-  // Extract real IP — handle proxy headers (X-Forwarded-For may be comma-separated list)
-  const forwarded = req.headers['x-forwarded-for'];
-  const ipAddress = forwarded
-    ? String(forwarded).split(',')[0].trim()
-    : req.ip || '0.0.0.0';
-
+  const ipAddress = getClientIp(req);
+  const { db } = req;
   try {
-    const engagementRequest = await engagementService.createEngagementRequest(
-      req.db,
-      req.body,
-      ipAddress,
-    );
+    const engagementRequest = await EngagementService.createEngagementRequest(db, req.body, ipAddress);
     return res.status(201).json(engagementRequest);
   } catch (err) {
-    return handleError(err, res);
+    const status = getErrorStatus(err);
+    const errorBody = { error: { code: err.code || 'INTERNAL_ERROR', message: err.message || 'An unexpected error occurred.' } };
+
+    // Set rate limit headers on 429 responses
+    if (status === 429) {
+      const resetTime = Math.floor(Date.now() / 1000) + 3600;
+      res.set('X-RateLimit-Limit', '10');
+      res.set('X-RateLimit-Remaining', '0');
+      res.set('X-RateLimit-Reset', String(resetTime));
+      res.set('Retry-After', '3600');
+    }
+
+    if (status === 500) {
+      console.error('[EngagementHandler] Unhandled error:', err);
+    }
+
+    return res.status(status).json(errorBody);
   }
 }
 
 /**
- * GET /api/v1/admin/engagement-requests — CURATOR only
- *
- * Query parameters:
- *   record_id, request_type, status, from_date, to_date, page, page_size
- *
- * Returns: PaginatedResponse<EngagementRequest>
- *   { data: [...], pagination: { page, page_size, total_count, total_pages } }
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
+ * GET /api/v1/admin/engagement-requests — CURATOR (auth middleware applied at route level)
+ * Query params: record_id, request_type, status, from_date, to_date, page, page_size
  */
 async function listEngagementRequests(req, res) {
+  const { db } = req;
   const filters = {
     record_id: req.query.record_id || undefined,
     request_type: req.query.request_type || undefined,
     status: req.query.status || undefined,
     from_date: req.query.from_date || undefined,
     to_date: req.query.to_date || undefined,
-    page: req.query.page,
-    page_size: req.query.page_size,
+    page: req.query.page || undefined,
+    page_size: req.query.page_size || undefined,
   };
 
+  // Remove undefined keys
+  Object.keys(filters).forEach((key) => {
+    if (filters[key] === undefined) delete filters[key];
+  });
+
   try {
-    const result = await engagementService.listEngagementRequests(req.db, filters);
+    const result = await EngagementService.listEngagementRequests(db, filters);
     return res.status(200).json(result);
   } catch (err) {
-    return handleError(err, res);
+    console.error('[EngagementHandler] listEngagementRequests error:', err);
+    return res.status(500).json({
+      error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' },
+    });
   }
 }
 
 /**
- * PATCH /api/v1/admin/engagement-requests/:request_id — CURATOR only
- *
+ * PATCH /api/v1/admin/engagement-requests/:request_id — CURATOR
  * Body: { status: EngagementRequestStatus, curator_note?: string | null }
- * Returns updated EngagementRequest on success; 404 if request_id not found.
- *
- * curator user_id is sourced from req.user (session), never from request body.
- *
- * @param {import('express').Request} req
- * @param {import('express').Response} res
  */
 async function updateEngagementRequestStatus(req, res) {
+  const { db } = req;
   const { request_id } = req.params;
-  // req.user is set by app.js session→user mapping; fall back to req.session.user for safety
-  const curatorUserId = (req.user || (req.session && req.session.user) || {}).user_id;
+  const curatorUserId = req.session && req.session.user ? req.session.user.user_id : null;
 
   try {
-    const updated = await engagementService.updateEngagementRequestStatus(
-      req.db,
+    const updated = await EngagementService.updateEngagementRequestStatus(
+      db,
       request_id,
       req.body,
-      curatorUserId,
+      curatorUserId
     );
     return res.status(200).json(updated);
   } catch (err) {
-    return handleError(err, res);
+    const status = getErrorStatus(err);
+    if (status === 500) {
+      console.error('[EngagementHandler] updateEngagementRequestStatus error:', err);
+    }
+    return res.status(status).json({
+      error: { code: err.code || 'INTERNAL_ERROR', message: err.message || 'An unexpected error occurred.' },
+    });
   }
 }
 

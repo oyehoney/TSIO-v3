@@ -1,44 +1,30 @@
-import { defineConfig, devices } from '@playwright/test';
-
 /**
- * Playwright e2e configuration for TSIO Innovation Hub.
- *
- * Tests run against the Express dev server on http://localhost:3000.
- * The webServer config auto-starts the server if not already running.
- *
- * Backend (database) is required for integration tests; unit-level tests
- * use route interception (page.route()) to mock API calls.
+ * playwright.config.ts
+ * Root-level Playwright configuration for TSIO Innovation Hub integration test suite
+ * Plan 18 — Wave 7b: End-to-end integration validation
  */
+
+import { defineConfig } from '@playwright/test';
+import path from 'path';
+
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'list',
+  timeout: 30_000,
+  retries: 1,
+  workers: 1,
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    headless: true,
+    // Don't fail on navigation errors — some tests mock 404 pages
+    ignoreHTTPSErrors: true,
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
-  // Auto-start Express dev server if not already running
-  // TEST_MOCK_SEARCH=true activates in-memory mock fixtures in searchPageHandler.js
-  // so e2e tests run without a live PostgreSQL database (Wave 7 uses real data).
+  reporter: [['list'], ['html', { open: 'never' }]],
   webServer: {
-    command: 'node src/server.js',
+    // Start the Vite dev server from the client directory
+    command: path.join(__dirname, 'client/node_modules/.bin/vite') + ' --config ' + path.join(__dirname, 'client/vite.config.ts'),
+    cwd: path.join(__dirname, 'client'),
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30000,
-    env: {
-      PORT: '3000',
-      NODE_ENV: 'test',
-      TEST_MOCK_SEARCH: 'true',
-      DATABASE_URL: process.env.DATABASE_URL || 'postgresql://tsio:tsio@localhost:5432/tsio_hub',
-    },
+    reuseExistingServer: true,
+    timeout: 30_000,
   },
 });

@@ -17,5 +17,5 @@
     "moduleResolution": "bundler"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "src/client/**/*", "src/admin/**/*", "src/components/admin/**/*", "src/pages/admin/**/*"]
+  "exclude": ["node_modules", "dist", "tests"]
 }

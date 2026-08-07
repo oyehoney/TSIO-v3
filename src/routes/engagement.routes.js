@@ -3,65 +3,56 @@
 /**
  * engagement.routes.js
  *
- * Route registration for EngagementService endpoints.
+ * Route registration for engagement endpoints:
+ *   POST /api/v1/engagement-requests (PUBLIC + rate limiter)
+ *   GET /api/v1/admin/engagement-requests (CURATOR-gated)
+ *   PATCH /api/v1/admin/engagement-requests/:request_id (CURATOR-gated)
  *
- * Routes:
- *   POST   /api/v1/engagement-requests           — PUBLIC (rate-limited)
- *   GET    /api/v1/admin/engagement-requests      — CURATOR (auth-gated)
- *   PATCH  /api/v1/admin/engagement-requests/:id — CURATOR (auth-gated)
- *
- * Auth pattern: requireCurator checks req.user (set by authenticateOidc in production,
- * or by app.js session→user mapping for test environments that inject req.session.user).
- * Rate limiting: engagementLimiter from Wave 3b (plan 07) — 10 requests/hour per IP.
- *
- * NOTE: authenticateOidc is used for production OIDC sessions. In test environments,
- * app.js maps req.session.user → req.user, so requireCurator works without OIDC.
- * For the admin routes we use requireCurator directly (same pattern as submissions.js)
- * to remain testable without live OIDC infrastructure.
+ * Auth is session-based (req.session.user) consistent with Wave 2c record routes.
+ * TechArch §5.2: CURATOR role required for admin endpoints.
  */
 
-const { Router } = require('express');
+const express = require('express');
 const { engagementLimiter } = require('../middleware/rateLimiter');
-const requireCurator = require('../middleware/requireCurator');
 const {
   createEngagementRequest,
   listEngagementRequests,
   updateEngagementRequestStatus,
 } = require('../handlers/engagement.handler');
 
-const router = Router();
+const router = express.Router();
 
-// ── Public endpoint (no auth, rate-limited) ───────────────────────────────────
-// POST /api/v1/engagement-requests
-// Rate limit: 10 requests/hour per IP (T-08-07 mitigation)
-// CAPTCHA validation is enforced inside EngagementService (T-08-01 mitigation)
-router.post(
-  '/engagement-requests',
-  engagementLimiter,
-  createEngagementRequest,
-);
+/**
+ * Session-based CURATOR auth guard (mirrors requireCurator in recordHandler.js).
+ * Reads from req.session.user (set by session middleware in tests and by OIDC in production).
+ *
+ * Returns:
+ *   401 UNAUTHORIZED if no session
+ *   403 ACCESS_DENIED if role is not CURATOR or ADMIN
+ */
+function requireCurator(req, res, next) {
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({
+      error: { code: 'UNAUTHORIZED', message: 'Authentication required.' },
+    });
+  }
+  const { role } = req.session.user;
+  if (role !== 'CURATOR' && role !== 'ADMIN') {
+    return res.status(403).json({
+      error: { code: 'ACCESS_DENIED', message: 'CURATOR or ADMIN role required.' },
+    });
+  }
+  return next();
+}
 
-// ── CURATOR-gated endpoints ───────────────────────────────────────────────────
-// T-08-04: Both admin engagement routes require CURATOR role (401/403 enforcement).
-// requireCurator checks req.user which is set by:
-//   - authenticateOidc middleware in production (full OIDC stack)
-//   - app.js session→user mapping in test environments
-//
-// In production deployment, mount these routes behind authenticateOidc in server.js
-// or use the admin router that already has authenticateOidc applied.
+// POST /api/v1/engagement-requests — PUBLIC (no auth required)
+// Rate limited to 10 requests/hour per IP (TechArch T-08-07, FRD §F07 §Validation)
+router.post('/engagement-requests', engagementLimiter, createEngagementRequest);
 
-// GET /api/v1/admin/engagement-requests — paginated list with filters
-router.get(
-  '/admin/engagement-requests',
-  requireCurator,
-  listEngagementRequests,
-);
+// GET /api/v1/admin/engagement-requests — CURATOR only
+router.get('/admin/engagement-requests', requireCurator, listEngagementRequests);
 
-// PATCH /api/v1/admin/engagement-requests/:request_id — update status + curator_note
-router.patch(
-  '/admin/engagement-requests/:request_id',
-  requireCurator,
-  updateEngagementRequestStatus,
-);
+// PATCH /api/v1/admin/engagement-requests/:request_id — CURATOR only
+router.patch('/admin/engagement-requests/:request_id', requireCurator, updateEngagementRequestStatus);
 
 module.exports = router;

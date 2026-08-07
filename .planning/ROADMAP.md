@@ -52,12 +52,12 @@ Plans:
   3. The publication lifecycle state machine (Draft → Review → Published → Superseded/Archived) is enforced at the service layer; a record cannot skip states
   4. The governance gate blocks publication if any pub-required field (problem statement, named owner, maturity, review status, source artifact, last-reviewed date, disclaimer) is missing — and lists the blocking fields
   5. Only Published records are visible to non-curator users; Draft and Review records are hidden from public routes
-**Plans**: 3 plans in 2 waves
+**Plans**: TBD
 
 Plans:
-- [ ] 02-01-PLAN.md — Content model services (TDD): GovernanceGateService, PublicationLifecycleService, RecordService, RecordRepository, all 14 admin API endpoints [Wave 1]
-- [ ] 02-02-PLAN.md — Admin record new/edit EJS pages: tabbed form, publication state controls, governance gate feedback, Playwright + axe-core [Wave 2]
-- [ ] 02-03-PLAN.md — Admin record list, dashboard summary tiles, content model reference page, Playwright + axe-core [Wave 2]
+- [ ] 02-01: Content model — maturity/review status enums, trust disclaimer logic, GovernanceGateService, PublicationLifecycleService
+- [ ] 02-02: Admin record management — RecordEditPage (all fields, tabbed), PublicationStateControls, GovernanceGateFeedback
+- [ ] 02-03: Admin record list, dashboard summary tiles, content model reference page
 
 ### Phase 3: Innovation Record & Perspectives
 **Goal**: A stakeholder can open a published innovation record and see all structured content — problem context, findings, maturity/readiness, reuse guidance, ownership, artifact links, and next-action options — and can switch between an executive and technical perspective of the same record.
@@ -69,13 +69,13 @@ Plans:
   3. Trust disclaimers (POC ≠ production-ready, Published ≠ approved for adoption, etc.) are rendered visibly on every published record based on maturity level and source type — curator cannot suppress them
   4. A curator can create a structured innovation record linked to an existing SharePoint lessons-learned document, making it discoverable without relocating the original — the artifact link points to the external source
   5. Artifact links open in a new tab; no document content is embedded or hosted by the Hub
-**Plans**: 4 plans in 3 waves
+**Plans**: TBD
 
 Plans:
-- [ ] 03-01-PLAN.md — RecordService trust disclaimer 4-rule logic + GET /api/v1/records/:id public API + integration tests [Wave 1, TDD]
-- [ ] 03-02-PLAN.md — Public record page EJS (all content sections, TrustDisclaimerBlock, artifact links, NextActionPanel stub) + Playwright axe-core [Wave 2]
-- [ ] 03-03-PLAN.md — Perspective toggle (Executive/Technical tab, client-side JS no-reload, ?view= URL param, keyboard nav) + Playwright axe-core [Wave 3]
-- [ ] 03-04-PLAN.md — Lessons-learned admin workflow (artifact link guidance text, non-blocking HEAD reachability check, advisory + audit log) + Playwright axe-core [Wave 2, parallel with 03-02]
+- [ ] 03-01: Innovation record data model — RecordService, all fields, key findings array, artifact links, engagement options, trust disclaimer rendering
+- [ ] 03-02: Public RecordPage — all content sections, TrustDisclaimerBlock, RecordMetaFooter, NextActionPanel (stub)
+- [ ] 03-03: PerspectiveToggle — Executive/Technical tab rendering, per-perspective CTAs, optional `?view=` URL param
+- [ ] 03-04: Lessons-learned integration workflow — artifact link management in admin, external URL validation, integration notes in curation UI
 
 ### Phase 4: Catalog & Search
 **Goal**: A stakeholder arriving at the Hub can browse all published innovation records in a filterable catalog and can search using problem-oriented natural language to surface relevant records without knowing the project name or team.
@@ -87,13 +87,13 @@ Plans:
   3. A user can search using a problem description (not just a project name) and receive relevance-ranked results with problem_statement and key_findings fields weighted higher than title
   4. Search results show the same maturity and review status signals as catalog cards; clicking a result opens the full innovation record
   5. When search returns zero results, the user sees guidance to submit a mission problem (links to F5 form); when the catalog is empty, curators see a prompt to create the first record
-**Plans**: 4 plans in 2 waves
+**Plans**: TBD
 
 Plans:
-- [ ] 04-01-PLAN.md — CatalogService (TDD): publication-filtered queries, multi-value filter application, sort orders, pagination, facet endpoint + integration tests [Wave 1]
-- [ ] 04-02-PLAN.md — CatalogPage: CatalogGrid, CatalogCard partial, FilterPanel (AJAX/fetch-based no reload), SortControl, Pagination, empty states + Playwright/axe-core [Wave 2]
-- [ ] 04-03-PLAN.md — SearchService (TDD): PostgreSQL FTS plainto_tsquery + ts_rank + ts_headline, query sanitization, relevance ranking, PUBLIC/CURATOR scoping + integration tests [Wave 1]
-- [ ] 04-04-PLAN.md — SearchPage: SearchResultsList with highlight snippets, filter panel, zero-results CTA (/submit stub), bookmarkable URL state + Playwright/axe-core [Wave 2]
+- [ ] 04-01: CatalogService — publication-filtered queries, multi-value filter application, sort orders, pagination, facet endpoint
+- [ ] 04-02: CatalogPage — CatalogGrid, CatalogCard components, FilterPanel, SortControl, Pagination, empty state
+- [ ] 04-03: SearchService — PostgreSQL FTS with weighted tsvector, query sanitization, relevance ranking, CURATOR vs PUBLIC scoping
+- [ ] 04-04: SearchPage — SearchResultsList with highlight snippets, filter panel, empty-state CTA, bookmarkable URL state
 
 ### Phase 5: Engagement & Opportunity Submission
 **Goal**: A stakeholder can submit a mission problem for I&R consideration and can request a demo, adoption discussion, or technical guidance from any innovation record; all engagement is logged and routed to the I&R team via the configurable email address.
@@ -105,12 +105,12 @@ Plans:
   3. Every submitted engagement request and opportunity submission triggers an email to the configurable routing address (AOml_TSO_IRB_Team@ao.uscourts.gov or whatever is set in admin settings)
   4. Curators can view all incoming opportunity submissions and engagement requests in the admin interface, with status and the ability to add internal notes
   5. IP-based rate limiting prevents submission abuse; CAPTCHA is applied to public submission forms
-**Plans**: 3 plans in 2 waves
+**Plans**: TBD
 
 Plans:
-- [ ] 05-01-PLAN.md — EngagementService (TDD): engagement request creation, validation (record published + record_engagement_options check), reCAPTCHA v3, rate limiting (10/IP/hr), Nodemailer soft-fail email, three API endpoints, curator admin page [Wave 1]
-- [ ] 05-02-PLAN.md — EngagementRequestModal: NextActionPanel stub wired, per-record engagement form modal, request type pre-population, reCAPTCHA v3 client-side, confirmation text, Playwright + axe-core [Wave 2, depends on 05-01]
-- [ ] 05-03-PLAN.md — SubmissionService (TDD): opportunity submission form at /submit-opportunity, reCAPTCHA v3, rate limiting (5/IP/hr), HTML stripping, Nodemailer soft-fail, exact FRD confirmation text, three API endpoints, curator admin page, Playwright + axe-core [Wave 1]
+- [ ] 05-01: EngagementService — request creation, validation, rate limiting, email trigger; EngagementActivityPage in admin
+- [ ] 05-02: EngagementRequestModal — per-record engagement form, request type routing, confirmation messaging
+- [ ] 05-03: SubmissionService — opportunity submission form, CAPTCHA, rate limiting, curator queue; OpportunitySubmissionsPage in admin
 
 ### Phase 6: Content Seeding & Launch Polish
 **Goal**: The Hub launches with at least 3 fully curated innovation records — including the Audio Security POC as the anchor record and at least one archived experiment — trust disclaimer UI is visually prominent, accessibility meets WCAG 2.1 AA, performance targets are met, and ATO-support documentation is complete.
@@ -123,14 +123,14 @@ Plans:
   4. The Hub meets WCAG 2.1 AA accessibility standards (keyboard navigation, screen reader compatibility, sufficient color contrast on maturity/review status badges)
   5. The public catalog loads within 3 seconds under normal load; a curator can create and publish a record from scratch in under 60 minutes
   6. ATO-support documentation package is complete: data classification of all stored fields, system boundary diagram, authentication/authorization controls description, audit log coverage table, and identified open risk items
-**Plans**: 5 plans in 3 waves
+**Plans**: TBD
 
 Plans:
-- [ ] 06-01-PLAN.md — Audio Security POC seed script: idempotent Knex seed inserting full record + 5 findings + 6 tags + 1 artifact link + 2 engagement options [Wave 1]
-- [ ] 06-02-PLAN.md — Additional seed records: AI Redaction POC (PUBLISHED) + Blockchain Experiment (ARCHIVED) + integration tests for scoping [Wave 2, parallel]
-- [ ] 06-03-PLAN.md — Trust disclaimer polish: BADGE_COLORS map + WCAG contrast verification + all 4-rule combination tests [Wave 2, parallel]
-- [ ] 06-04-PLAN.md — WCAG 2.1 AA audit: API field presence tests + HTTP semantic tests + docs/wcag-audit.md with badge contrast table and manual checklist [Wave 2, parallel]
-- [ ] 06-05-PLAN.md — ATO documentation package + performance baseline: 5 docs in docs/ato-support/ + docs/PERFORMANCE.md + p95 < 3s integration test [Wave 3]
+- [ ] 06-01: Audio Security POC record — curate full record from lessons-learned document, all structured fields, executive + technical perspectives
+- [ ] 06-02: Additional seed records (2+ POCs, 1 archived experiment) — curate and publish
+- [ ] 06-03: Trust disclaimer UI polish — visual prominence audit, color contrast, badge accessibility
+- [ ] 06-04: WCAG 2.1 AA audit and remediation — keyboard navigation, ARIA labels, screen reader testing
+- [ ] 06-05: ATO documentation package + performance baseline — system boundary diagram, data classification table, controls summary, launch readiness checklist
 
 ## Progress
 
@@ -140,8 +140,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Platform | 0/5 | Not started | - |
-| 2. Content Model & Admin Interface | 0/3 | Planned (3 plans, 2 waves) | - |
-| 3. Innovation Record & Perspectives | 0/4 | Planned (4 plans, 3 waves) | - |
-| 4. Catalog & Search | 0/4 | Planned (4 plans, 2 waves) | - |
-| 5. Engagement & Opportunity Submission | 0/3 | Planned (3 plans, 2 waves) | - |
-| 6. Content Seeding & Launch Polish | 0/5 | Planned (5 plans, 3 waves) | - |
+| 2. Content Model & Admin Interface | 0/3 | Not started | - |
+| 3. Innovation Record & Perspectives | 0/4 | Not started | - |
+| 4. Catalog & Search | 0/4 | Not started | - |
+| 5. Engagement & Opportunity Submission | 0/3 | Not started | - |
+| 6. Content Seeding & Launch Polish | 0/5 | Not started | - |

@@ -1,15 +1,13 @@
 'use strict';
-// src/services/SubmissionService.js
 const { getDb } = require('../db');
 const { validate: validateCaptcha } = require('./CaptchaService');
 const { sendRoutingNotification } = require('./EmailService');
 const sanitizeHtml = require('sanitize-html');
 
 // ─── Input sanitization helper ─────────────────────────────────────────────────
-// Strips all HTML tags from user input before persistence — TechArch §5.5 XSS defense
 function sanitize(text) {
-  if (text === null || text === undefined) return text;
-  return sanitizeHtml(String(text), { allowedTags: [], allowedAttributes: {} });
+  if (!text) return text;
+  return sanitizeHtml(text, { allowedTags: [], allowedAttributes: {} });
 }
 
 function isValidEmail(email) {
@@ -29,11 +27,7 @@ function isValidHttpsUrl(url) {
 
 /**
  * Create a new opportunity submission.
- * Validates fields, verifies CAPTCHA (before any DB write), persists, then fires non-fatal email.
- * Per TechArch §2.1 SubmissionService spec; FRD F05 §Validation.
- *
- * @param {Object} data - Request body
- * @returns {Promise<Object>} The persisted opportunity_submission row
+ * Validates fields, verifies CAPTCHA, persists, then fires non-fatal email.
  */
 async function createOpportunitySubmission(data) {
   const db = getDb();
@@ -41,7 +35,7 @@ async function createOpportunitySubmission(data) {
 
   // Field validation per FRD F05 §Validation
   const problemDesc = data.problem_description ? sanitize(data.problem_description) : '';
-  if (!data.problem_description || problemDesc.length < 50) {
+  if (!problemDesc || problemDesc.length < 50) {
     errors.push({ field: 'problem_description', error_code: 'FIELD_TOO_SHORT', message: 'Problem description must be at least 50 characters.' });
   } else if (problemDesc.length > 3000) {
     errors.push({ field: 'problem_description', error_code: 'FIELD_TOO_LONG', message: 'Problem description must be 3000 characters or fewer.' });
@@ -74,7 +68,7 @@ async function createOpportunitySubmission(data) {
     throw err;
   }
 
-  // CAPTCHA verification (before any DB write — T-07-03 mitigation)
+  // CAPTCHA verification (before any DB write)
   const captchaResult = await validateCaptcha(data.captcha_token);
   if (!captchaResult.valid) {
     const err = new Error('CAPTCHA verification failed. Please try again.');
@@ -86,10 +80,10 @@ async function createOpportunitySubmission(data) {
   // Persist submission
   const [submission] = await db('opportunity_submissions')
     .insert({
-      problem_description: problemDesc,
-      mission_area: missionArea,
-      submitting_office: submittingOffice,
-      submitter_name: submitterName,
+      problem_description: sanitize(data.problem_description),
+      mission_area: sanitize(data.mission_area),
+      submitting_office: sanitize(data.submitting_office),
+      submitter_name: sanitize(data.submitter_name),
       submitter_email: sanitize(data.submitter_email),
       submitter_title: data.submitter_title ? sanitize(data.submitter_title) : null,
       urgency_context: data.urgency_context ? sanitize(data.urgency_context) : null,
@@ -98,20 +92,12 @@ async function createOpportunitySubmission(data) {
     })
     .returning('*');
 
-  // Non-fatal email — submission already persisted; failure here does NOT affect response
-  // T-07-04: email sent only to curator-configured routing address, plain-text body
-  sendRoutingNotification('opportunity_submission', submission).catch(() => {});
+  // Non-fatal email — submission already persisted; failure here does not affect response
+  await sendRoutingNotification('opportunity_submission', submission).catch(() => {});
 
   return submission;
 }
 
-/**
- * List all opportunity submissions with pagination.
- * Admin endpoint — CURATOR only.
- *
- * @param {{ page?: number, page_size?: number }} options
- * @returns {Promise<{ data: Array, pagination: Object }>}
- */
 async function listOpportunitySubmissions({ page = 1, page_size = 20 } = {}) {
   const db = getDb();
   const offset = (page - 1) * page_size;
@@ -133,21 +119,12 @@ async function listOpportunitySubmissions({ page = 1, page_size = 20 } = {}) {
 }
 
 /**
- * Update disposition of an opportunity submission.
- * CURATOR only. Sets reviewed_at and reviewed_by_user_id from the curator session.
- * When disposition=LINKED_TO_RECORD, validates linked_record_id exists in innovation_records.
- *
- * Valid dispositions: UNDER_REVIEW, ACCEPTED_FOR_CONSIDERATION, DECLINED, LINKED_TO_RECORD
- *
- * @param {string} submissionId - UUID of the submission
- * @param {Object} data - { disposition, linked_record_id?, internal_note? }
- * @param {string} curatorUserId - UUID from req.user.user_id (not from request body — T-07-05)
- * @returns {Promise<Object>} The updated submission row
+ * Update disposition of an opportunity submission (CURATOR only).
+ * Valid dispositions: UNDER_REVIEW, ACCEPTED_FOR_CONSIDERATION, DECLINED, LINKED_TO_RECORD.
  */
 async function updateOpportunityDisposition(submissionId, data, curatorUserId) {
   const db = getDb();
   const VALID_DISPOSITIONS = ['UNDER_REVIEW', 'ACCEPTED_FOR_CONSIDERATION', 'DECLINED', 'LINKED_TO_RECORD'];
-
   if (!VALID_DISPOSITIONS.includes(data.disposition)) {
     const err = new Error('Invalid disposition value');
     err.status = 422;
@@ -194,15 +171,6 @@ async function updateOpportunityDisposition(submissionId, data, curatorUserId) {
 
 // ─── Contribution Submissions (F06) ────────────────────────────────────────────
 
-/**
- * Create a new contribution submission.
- * Validates fields (including 1–5 HTTPS artifact_urls, no ARCHIVED maturity),
- * verifies CAPTCHA, persists, then fires non-fatal email.
- * Per FRD F06 §Validation; TechArch §5.5.
- *
- * @param {Object} data - Request body
- * @returns {Promise<Object>} The persisted contribution_submission row
- */
 async function createContributionSubmission(data) {
   const db = getDb();
   const errors = [];
@@ -233,7 +201,7 @@ async function createContributionSubmission(data) {
     errors.push({ field: 'self_assessed_maturity', error_code: 'VALIDATION_ERROR', message: 'Self-assessed maturity must be one of: IDEA, EXPERIMENT_POC, PROTOTYPE_PILOT, PRODUCTION_VALIDATED.' });
   }
 
-  // artifact_urls: 1–5 valid HTTPS URLs (T-07-07 service-layer enforcement)
+  // artifact_urls: 1–5 valid HTTPS URLs
   if (!data.artifact_urls || !Array.isArray(data.artifact_urls) || data.artifact_urls.length === 0) {
     errors.push({ field: 'artifact_urls', error_code: 'ARTIFACT_URL_REQUIRED', message: 'At least one artifact link is required.' });
   } else if (data.artifact_urls.length > 5) {
@@ -284,14 +252,14 @@ async function createContributionSubmission(data) {
 
   const [submission] = await db('contribution_submissions')
     .insert({
-      work_description: workDesc,
-      problem_addressed: problemAddressed,
-      outcome_summary: outcomeSummary,
+      work_description: sanitize(data.work_description),
+      problem_addressed: sanitize(data.problem_addressed),
+      outcome_summary: sanitize(data.outcome_summary),
       self_assessed_maturity: data.self_assessed_maturity,
-      artifact_urls: data.artifact_urls, // TEXT[] — Knex handles PostgreSQL array
-      contributing_team: contributingTeam,
-      contributing_office: contributingOffice,
-      contact_name: contactName,
+      artifact_urls: data.artifact_urls, // TEXT[] — knex handles array for PostgreSQL
+      contributing_team: sanitize(data.contributing_team),
+      contributing_office: sanitize(data.contributing_office),
+      contact_name: sanitize(data.contact_name),
       contact_email: sanitize(data.contact_email),
       contact_title: data.contact_title ? sanitize(data.contact_title) : null,
       additional_context: data.additional_context ? sanitize(data.additional_context) : null,
@@ -299,19 +267,12 @@ async function createContributionSubmission(data) {
     })
     .returning('*');
 
-  // Non-fatal email — submission already persisted; fire-and-forget
-  sendRoutingNotification('contribution_submission', submission).catch(() => {});
+  // Non-fatal email
+  await sendRoutingNotification('contribution_submission', submission).catch(() => {});
 
   return submission;
 }
 
-/**
- * List all contribution submissions with pagination.
- * Admin endpoint — CURATOR only.
- *
- * @param {{ page?: number, page_size?: number }} options
- * @returns {Promise<{ data: Array, pagination: Object }>}
- */
 async function listContributionSubmissions({ page = 1, page_size = 20 } = {}) {
   const db = getDb();
   const offset = (page - 1) * page_size;
@@ -332,22 +293,9 @@ async function listContributionSubmissions({ page = 1, page_size = 20 } = {}) {
   };
 }
 
-/**
- * Update disposition of a contribution submission.
- * CURATOR only. Sets reviewed_at and reviewed_by_user_id from session (not request body).
- * When disposition=PUBLISHED, validates linked_record_id exists.
- *
- * Valid dispositions: UNDER_REVIEW, ACCEPTED_FOR_CURATION, DECLINED, PUBLISHED
- *
- * @param {string} submissionId - UUID of the submission
- * @param {Object} data - { disposition, linked_record_id?, internal_note? }
- * @param {string} curatorUserId - UUID from req.user.user_id (T-07-05: not from body)
- * @returns {Promise<Object>} The updated submission row
- */
 async function updateContributionDisposition(submissionId, data, curatorUserId) {
   const db = getDb();
   const VALID_DISPOSITIONS = ['UNDER_REVIEW', 'ACCEPTED_FOR_CURATION', 'DECLINED', 'PUBLISHED'];
-
   if (!VALID_DISPOSITIONS.includes(data.disposition)) {
     const err = new Error('Invalid disposition value');
     err.status = 422;
@@ -374,7 +322,7 @@ async function updateContributionDisposition(submissionId, data, curatorUserId) 
   const [updated] = await db('contribution_submissions')
     .where({ submission_id: submissionId })
     .update({
-      disposition: data.disposition,
+      status: data.disposition, // contribution_submissions uses 'status' column for disposition lifecycle
       linked_record_id: data.linked_record_id || null,
       internal_note: data.internal_note ? sanitize(data.internal_note) : null,
       reviewed_at: new Date(),

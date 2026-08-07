@@ -1,18 +1,12 @@
 'use strict';
-// src/services/EmailService.js
 const nodemailer = require('nodemailer');
 const { getSettingValue } = require('./SettingsRepository');
 const logger = require('../utils/logger');
 
 /**
  * Send a routing notification email to the I&R team routing address.
- *
- * CRITICAL DESIGN CONTRACTS:
- * 1. Reads engagement_routing_email from hub_settings at call time (NOT cached at startup).
- *    This allows curators to change the routing address without restarting the application.
- * 2. NON-FATAL: any SMTP or configuration error is logged and swallowed.
- *    The caller (SubmissionService) must persist the record BEFORE calling this function.
- *    Email failure NEVER affects the HTTP response for the submission.
+ * Reads routing email from hub_settings at call time (not cached — must be current from DB).
+ * NON-FATAL: any SMTP error is logged and swallowed — submission record is unaffected.
  *
  * @param {'opportunity_submission'|'contribution_submission'|'engagement_request'} type
  * @param {Object} payload - The record data to include in the notification
@@ -49,8 +43,7 @@ async function sendRoutingNotification(type, payload) {
 
     return { success: true };
   } catch (err) {
-    // NON-FATAL: log and return failure without rethrowing
-    // Submission/request record is already persisted — this is just a notification
+    // NON-FATAL: log and return failure without throwing
     logger.error('[EmailService] Routing notification failed', {
       type,
       error: err.message,
@@ -60,9 +53,6 @@ async function sendRoutingNotification(type, payload) {
   }
 }
 
-/**
- * Build email subject line based on notification type.
- */
 function buildSubject(type, payload) {
   switch (type) {
     case 'opportunity_submission':
@@ -76,10 +66,6 @@ function buildSubject(type, payload) {
   }
 }
 
-/**
- * Build plain-text email body. No HTML — limits formatting-based extraction of PII.
- * Per TechArch §5.4 sensitive data handling.
- */
 function buildBody(type, payload) {
   const timestamp = new Date().toISOString();
   let body = `TSIO Innovation Hub — Routing Notification\n`;
